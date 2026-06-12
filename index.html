@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Math Tracker - Green Edition</title>
+    <title>Math Tracker - Muted Green</title>
     <style>
         * {
-            box-sizing: border-box;
+            box-sizing: border-box !important;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
@@ -16,10 +16,11 @@
         :root {
             --bg-main: #ffffff;
             --bg-sidebar: #f7f7f7;
-            --border-color: #dddddd;
+            --border-color: #e0e0e0;
             --box-border: #cccccc;
             --text-grey: #999999;
-            --dark-green: #166534; /* 메인 테마 컬러 */
+            --muted-green: #2d5a27; /* 4) 톤다운된 초록 */
+            --muted-red: #d55454;   /* 3) 톤다운된 레드 */
             --sidebar-width: 280px;
         }
 
@@ -52,53 +53,51 @@
             margin-bottom: 40px;
         }
 
-        /* 모든 입력창 폭 일치 및 중앙 정렬 */
+        /* 1) 날짜 칸 폭 오차 해결을 위한 스타일 */
         .sidebar input {
-            width: 100%;
+            width: 100% !important;
             height: 50px;
             padding: 0 15px;
             border-radius: 10px;
             font-size: 16px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             background: #ffffff;
             outline: none;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
+            margin: 0 !important;
         }
 
         input[type="date"] {
-            color: var(--dark-green) !important;
+            color: var(--muted-green) !important;
             font-weight: 700;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input::placeholder { color: #aaaaaa; }
 
-        /* CREATE, SAVE PROGRESS 버튼 구분 */
+        /* 2) CREATE, SAVE 버튼 원래대로 (화이트 배경 + 회색 글씨) */
         .sidebar button.main-btn {
-            width: 100%;
+            width: 100% !important;
             height: 50px;
             border-radius: 10px;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            border: none;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-grey);
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-create {
-            background: #000000 !important; /* 검정 배경 */
-            color: #ffffff !important;
-        }
-
-        .btn-save {
-            background: #666666 !important; /* 진회색 배경 */
-            color: #ffffff !important;
-            margin-top: 5px;
-        }
+        .btn-create { margin-bottom: 5px; }
 
         .history-title { 
             font-size: 11px; 
@@ -113,7 +112,6 @@
         .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
         .history-info { font-size: 14px; margin-bottom: 12px; display: block; line-height: 1.5; font-weight: 600; }
         
-        /* 사진과 동일한 LOAD / DELETE 버튼 디자인 */
         .history-actions { display: flex; gap: 8px; align-items: center; }
         
         .btn-load { 
@@ -123,22 +121,21 @@
             width: 70px !important;
             height: 40px !important;
             border-radius: 8px !important;
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: 700 !important;
         }
         
         .btn-del { 
             background: #ffffff !important; 
-            color: #ff3b30 !important; 
-            border: 1.5px solid #ff3b30 !important; 
+            color: var(--muted-red) !important; /* 3) 톤다운 레드 적용 */
+            border: 1.5px solid var(--muted-red) !important; 
             flex: 1 !important;
             height: 40px !important;
             border-radius: 8px !important;
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: 700 !important;
         }
 
-        /* 메인 콘텐츠 영역 */
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -151,7 +148,6 @@
         .status-header { margin-bottom: 40px; }
         .progress-text { font-size: 32px; font-weight: 300; }
 
-        /* 네모칸 크기 및 테두리 */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(20, 1fr);
@@ -236,14 +232,12 @@
 
                 if (dateVal) {
                     box.classList.add('filled');
-                    // 진초록 계열 농도 조절
                     if (dateVal === selectedDate) {
-                        box.style.backgroundColor = '#166534'; // 현재 날짜: 선명한 진초록
+                        box.style.backgroundColor = 'var(--muted-green)';
                     } else {
                         const diffDays = Math.floor((new Date(selectedDate) - new Date(dateVal)) / (1000 * 60 * 60 * 24));
-                        // 과거일수록 연한 초록 (rgba의 투명도 조절)
                         const opacity = Math.max(0.15, 0.6 - (diffDays * 0.1));
-                        box.style.backgroundColor = `rgba(22, 101, 52, ${opacity})`;
+                        box.style.backgroundColor = `rgba(45, 90, 39, ${opacity})`;
                     }
                 }
                 grid.appendChild(box);
@@ -303,17 +297,17 @@
         }
 
         function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
             else logs.push(JSON.parse(JSON.stringify(currentData)));
-            localStorage.setItem('math_logs_vFinal_green', JSON.stringify(logs));
+            localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
             renderHistory();
         }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             list.innerHTML = '';
             logs.slice().reverse().forEach(log => {
                 const solved = log.state.filter(s => s !== null).length;
@@ -331,7 +325,7 @@
         }
 
         function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
@@ -345,9 +339,9 @@
 
         function deleteData(id) {
             if(!confirm("삭제하시겠습니까?")) return;
-            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('math_logs_vFinal_green', JSON.stringify(logs));
+            localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
             renderHistory();
         }
 
