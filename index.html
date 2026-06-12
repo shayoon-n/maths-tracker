@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Math Tracker - Multi-Day</title>
+    <title>Math Tracker - Final Pro</title>
     <style>
         * {
-            box-sizing: border-box;
+            box-sizing: border-box; /* 1) 폭 오차 방지의 핵심 */
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
         }
 
         :root {
-            --bg: #ffffff;
-            --border: #eeeeee;
+            --bg-main: #ffffff;
+            --bg-sidebar: #f7f7f7; /* 4) 사이드바 연회색 */
+            --border-color: #dddddd;
+            --box-border: #cccccc; /* 3) 네모칸 테두리 살짝 진하게 */
             --text-grey: #999999;
             --dark-green: #166534;
             --sidebar-width: 280px;
@@ -25,17 +27,18 @@
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             height: 100vh;
-            background-color: var(--bg);
+            background-color: var(--bg-main);
             color: #000000;
             overflow: hidden;
             touch-action: none;
         }
 
+        /* 1, 4) 사이드바 디자인 및 폭 정렬 */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
-            background: var(--bg);
-            border-right: 1px solid var(--border);
+            background: var(--bg-sidebar);
+            border-right: 1px solid #eeeeee;
             display: flex;
             flex-direction: column;
             padding: 40px 20px;
@@ -50,46 +53,48 @@
             margin-bottom: 40px;
         }
 
+        /* 모든 입력창 폭 완전 일치 */
         .sidebar input {
-            display: block;
             width: 100%;
             height: 50px;
             padding: 0 15px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 16px;
-            border: 1px solid var(--border);
+            border: 1px solid #e0e0e0;
             background: #ffffff;
             outline: none;
-            line-height: normal;
             display: flex;
             align-items: center;
         }
 
-        /* 날짜 입력창 디자인 및 중앙 정렬 */
+        /* 날짜 입력창: 중앙 정렬 및 디자인 */
         input[type="date"] {
             color: var(--dark-green) !important;
             font-weight: 700;
             text-align: center;
             justify-content: center;
+            appearance: none;
+            -webkit-appearance: none;
         }
 
-        input::placeholder { color: #cccccc; }
+        input::placeholder { color: #aaaaaa; }
 
+        /* 버튼 디자인: SAVED RECORDS와 같은 회색 글씨 */
         .sidebar button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
             width: 100%;
             height: 50px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            border: 1px solid var(--border);
+            border: 1px solid #e0e0e0;
             background: #ffffff;
             color: var(--text-grey);
             text-transform: uppercase;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .history-title { 
@@ -97,21 +102,22 @@
             font-weight: 800; 
             color: var(--text-grey); 
             margin-bottom: 20px; 
-            letter-spacing: 1px; 
+            letter-spacing: 1.2px; 
             text-transform: uppercase;
         }
 
         .history-list { display: flex; flex-direction: column; gap: 15px; }
-        .history-item { padding: 15px 0; border-bottom: 1px solid #f5f5f5; }
-        .history-info { font-size: 14px; margin-bottom: 10px; display: block; line-height: 1.5; }
+        .history-item { padding: 15px 0; border-bottom: 1px solid #eeeeee; }
+        .history-info { font-size: 14px; margin-bottom: 10px; display: block; line-height: 1.5; font-weight: 500; }
         
         .history-actions { display: flex; gap: 8px; }
         .btn-load { height: 35px !important; flex: 1; font-size: 11px !important; }
         .btn-del { 
             height: 35px !important; flex: 1.2; font-size: 11px !important;
-            color: #ff3b30 !important; border-color: #ffe5e5 !important;
+            color: #ff3b30 !important; border-color: #ffcccc !important;
         }
 
+        /* 메인 콘텐츠 영역 */
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -119,30 +125,31 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-color: var(--bg-main);
         }
 
-        .status-header { margin-bottom: 40px; }
-        .progress-text { font-size: 32px; font-weight: 300; }
+        .status-header { margin-bottom: 50px; }
+        .progress-text { font-size: 32px; font-weight: 300; letter-spacing: -0.5px; }
 
+        /* 2, 3) 네모칸 크기 및 테두리 수정 */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(20, 1fr);
-            gap: 6px;
+            gap: 8px;
             padding: 10px;
             user-select: none;
         }
 
         .box {
-            width: 22px;
-            height: 22px;
-            border: 1px solid #eeeeee;
-            border-radius: 4px;
+            width: 28px; /* 크기 수정 */
+            height: 28px; /* 크기 수정 */
+            border: 1px solid var(--box-border); /* 테두리 조금 더 진하게 */
+            border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
             transition: background-color 0.1s;
         }
 
-        /* 날짜에 따라 JS에서 배경색을 직접 제어하므로 filled 클래스는 보조적으로 사용 */
         .box.filled { border-color: transparent; }
 
         ::-webkit-scrollbar { width: 0; }
@@ -171,21 +178,17 @@
     </div>
 
     <script>
-        // state 배열에는 이제 단순히 true/false가 아니라 해당 칸을 칠한 '날짜 문자열'이 들어갑니다.
         let currentData = { id: null, name: '', date: '', total: 0, state: [] };
         let isDragging = false;
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
-        // 오늘 날짜 세팅
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
+        // 날짜 기본값
+        const todayStr = new Date().toISOString().split('T')[0];
+        dateInput.value = todayStr;
 
-        // 날짜가 바뀔 때마다 그리드를 다시 그려 농도를 조절함
-        dateInput.addEventListener('change', () => {
-            if (currentData.id) render();
-        });
+        dateInput.addEventListener('change', () => { if (currentData.id) render(); });
 
         function createNew() {
             const total = parseInt(document.getElementById('totalInput').value);
@@ -194,10 +197,10 @@
 
             currentData = {
                 id: Date.now(),
-                name: name || '무제',
+                name: name || 'No Title',
                 date: dateInput.value,
                 total: total,
-                state: Array(total).fill(null) // null 이면 빈칸
+                state: Array(total).fill(null)
             };
             render();
             document.getElementById('saveBtn').style.display = 'flex';
@@ -214,21 +217,12 @@
 
                 if (dateVal) {
                     box.classList.add('filled');
-                    // 농도 계산 로직
                     if (dateVal === selectedDate) {
-                        box.style.backgroundColor = '#000000'; // 선택한 날짜는 완전 검정
+                        box.style.backgroundColor = '#000000';
                     } else {
-                        // 날짜 차이에 따른 농도 조절 (더 옛날일수록 연해짐)
                         const diffDays = Math.floor((new Date(selectedDate) - new Date(dateVal)) / (1000 * 60 * 60 * 24));
-                        
-                        if (diffDays > 0) {
-                            // 과거 날짜: 차이에 따라 투명도 조절 (0.2 ~ 0.6 범위)
-                            const opacity = Math.max(0.2, 0.6 - (diffDays * 0.05));
-                            box.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
-                        } else {
-                            // 미래 날짜 기록이 있다면 (거의 없겠지만) 연한 회색 처리
-                            box.style.backgroundColor = '#dddddd';
-                        }
+                        const opacity = Math.max(0.15, 0.5 - (diffDays * 0.08));
+                        box.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
                     }
                 }
                 grid.appendChild(box);
@@ -269,43 +263,37 @@
             const currentSelectedDate = dateInput.value;
             const newState = [...currentData.state];
             
-            // 마지막으로 채워진 인덱스 찾기
             let lastFilledIdx = -1;
             for(let i = 0; i < newState.length; i++) {
                 if(newState[i] !== null) lastFilledIdx = i;
             }
 
             if (targetIdx > lastFilledIdx) {
-                // 앞으로 채울 때는: 빈 칸만 현재 날짜로 채움
                 for (let i = 0; i <= targetIdx; i++) {
                     if (newState[i] === null) newState[i] = currentSelectedDate;
                 }
             } else {
-                // 뒤로 지울 때는: 선택한 칸 이후를 모두 비움
                 for (let i = newState.length - 1; i > targetIdx; i--) {
                     newState[i] = null;
                 }
             }
-
             currentData.state = newState;
             render();
         }
 
         function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_tracker_multi_v1') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
             else logs.push(JSON.parse(JSON.stringify(currentData)));
-            localStorage.setItem('math_tracker_multi_v1', JSON.stringify(logs));
+            localStorage.setItem('math_logs_vFinal', JSON.stringify(logs));
             renderHistory();
-            alert("저장되었습니다.");
         }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_tracker_multi_v1') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
             list.innerHTML = '';
-            
             logs.slice().reverse().forEach(log => {
                 const solved = log.state.filter(s => s !== null).length;
                 const item = document.createElement('div');
@@ -322,7 +310,7 @@
         }
 
         function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_tracker_multi_v1') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
@@ -335,10 +323,10 @@
         }
 
         function deleteData(id) {
-            if(!confirm("기록을 삭제할까요?")) return;
-            let logs = JSON.parse(localStorage.getItem('math_tracker_multi_v1') || '[]');
+            if(!confirm("삭제하시겠습니까?")) return;
+            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
             logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('math_tracker_multi_v1', JSON.stringify(logs));
+            localStorage.setItem('math_logs_vFinal', JSON.stringify(logs));
             renderHistory();
         }
 
