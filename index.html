@@ -145,4 +145,172 @@
 
     <div class="sidebar">
         <div class="input-group">
-            <input type="date" id="dateIn
+            <input type="date" id="dateInput">
+            <input type="text" id="nameInput" placeholder="공부 항목 이름">
+            <input type="number" id="totalInput" placeholder="총 문제 수">
+            <button class="btn-create" onclick="createNew()">CREATE</button>
+            <button id="saveBtn" class="btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
+        </div>
+
+        <div class="history-title">SAVED RECORDS</div>
+        <div id="historyList" class="history-list"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="status-header">
+            <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+        </div>
+        <div id="trackerGrid" class="tracker-grid"></div>
+    </div>
+
+    <script>
+        let currentData = { id: null, name: '', date: '', total: 0, state: [] };
+        let isDragging = false;
+        
+        const gridContainer = document.getElementById('trackerGrid');
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        function createNew() {
+            const total = parseInt(document.getElementById('totalInput').value);
+            if (!total) return;
+
+            currentData = {
+                id: Date.now(),
+                name: document.getElementById('nameInput').value || 'No Title',
+                date: document.getElementById('dateInput').value,
+                total: total,
+                state: Array(total).fill(null)
+            };
+            render();
+            document.getElementById('saveBtn').style.display = 'block';
+        }
+
+        function render() {
+            gridContainer.innerHTML = '';
+            const today = document.getElementById('dateInput').value;
+
+            currentData.state.forEach((dateVal, idx) => {
+                const box = document.createElement('div');
+                box.className = 'box';
+                box.dataset.index = idx; // 인덱스 저장
+                if (dateVal) {
+                    box.classList.add(dateVal === today ? 'filled-today' : 'filled-past');
+                }
+                gridContainer.appendChild(box);
+            });
+            updateStatus();
+        }
+
+        // --- 애플펜슬/터치 드래그 핵심 로직 수정 ---
+        
+        // 터치 시작
+        gridContainer.addEventListener('pointerdown', (e) => {
+            if (e.target.classList.contains('box')) {
+                isDragging = true;
+                const idx = parseInt(e.target.dataset.index);
+                toggleBox(idx);
+                // 드래그 중 다른 요소 선택 방지
+                e.target.setPointerCapture(e.pointerId);
+            }
+        });
+
+        // 터치 이동 중 (드래그)
+        gridContainer.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            
+            // 현재 터치/펜슬 위치에 있는 요소 찾기
+            const actualTarget = document.elementFromPoint(e.clientX, e.clientY);
+            if (actualTarget && actualTarget.classList.contains('box')) {
+                const idx = parseInt(actualTarget.dataset.index);
+                toggleBox(idx);
+            }
+        });
+
+        // 터치 종료
+        gridContainer.addEventListener('pointerup', (e) => {
+            isDragging = false;
+        });
+
+        function toggleBox(idx) {
+            const today = document.getElementById('dateInput').value;
+            
+            // 채우기: 이전 칸이 차 있거나 첫 칸일 때만
+            if (!currentData.state[idx]) {
+                if (idx === 0 || currentData.state[idx - 1]) {
+                    if (currentData.state[idx] !== today) {
+                        currentData.state[idx] = today;
+                        render();
+                    }
+                }
+            } 
+            // 지우기: 다음 칸이 비어 있거나 마지막 칸일 때만
+            else {
+                if (idx === currentData.state.length - 1 || !currentData.state[idx + 1]) {
+                    if (currentData.state[idx] !== null) {
+                        currentData.state[idx] = null;
+                        render();
+                    }
+                }
+            }
+        }
+
+        function updateStatus() {
+            const solved = currentData.state.filter(s => s).length;
+            const percent = currentData.total > 0 ? Math.round((solved / currentData.total) * 100) : 0;
+            document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
+        }
+
+        function saveData() {
+            let logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            const idx = logs.findIndex(l => l.id === currentData.id);
+            if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
+            else logs.push(JSON.parse(JSON.stringify(currentData)));
+            localStorage.setItem('math_logs_v3', JSON.stringify(logs));
+            alert('SAVED');
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            list.innerHTML = '';
+            logs.reverse().forEach(log => {
+                const solved = log.state.filter(s => s).length;
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <span class="history-info"><strong>${log.name}</strong><br>${log.date} (${solved}/${log.total})</span>
+                    <div class="history-actions">
+                        <button class="btn-load" onclick="loadData(${log.id})">LOAD</button>
+                        <button class="btn-del" onclick="deleteData(${log.id})">DELETE</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function loadData(id) {
+            const logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            const target = logs.find(l => l.id === id);
+            if (target) {
+                currentData = JSON.parse(JSON.stringify(target));
+                document.getElementById('nameInput').value = currentData.name;
+                document.getElementById('totalInput').value = currentData.total;
+                document.getElementById('dateInput').value = currentData.date;
+                render();
+                document.getElementById('saveBtn').style.display = 'block';
+                window.scrollTo(0,0);
+            }
+        }
+
+        function deleteData(id) {
+            if (!confirm('정말 삭제할까요?')) return;
+            let logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            localStorage.setItem('math_logs_v3', JSON.stringify(logs.filter(l => l.id !== id)));
+            renderHistory();
+        }
+
+        window.onload = renderHistory;
+    </script>
+</body>
+</html>
