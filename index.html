@@ -19,8 +19,8 @@
             --border-color: #e0e0e0;
             --box-border: #cccccc;
             --text-grey: #999999;
-            --muted-green: #2d5a27; /* 4) 톤다운된 초록 */
-            --muted-red: #d55454;   /* 3) 톤다운된 레드 */
+            --muted-green: #2d5a27;
+            --muted-red: #d55454;
             --sidebar-width: 280px;
         }
 
@@ -53,7 +53,6 @@
             margin-bottom: 40px;
         }
 
-        /* 1) 날짜 칸 폭 오차 해결을 위한 스타일 */
         .sidebar input {
             width: 100% !important;
             height: 50px;
@@ -79,7 +78,6 @@
 
         input::placeholder { color: #aaaaaa; }
 
-        /* 2) CREATE, SAVE 버튼 원래대로 (화이트 배경 + 회색 글씨) */
         .sidebar button.main-btn {
             width: 100% !important;
             height: 50px;
@@ -127,7 +125,7 @@
         
         .btn-del { 
             background: #ffffff !important; 
-            color: var(--muted-red) !important; /* 3) 톤다운 레드 적용 */
+            color: var(--muted-red) !important; 
             border: 1.5px solid var(--muted-red) !important; 
             flex: 1 !important;
             height: 40px !important;
@@ -269,25 +267,32 @@
         grid.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
             const idx = handlePointer(e);
-            if (idx !== null) processFill(idx);
+            if (idx !== null) processFill(idx, true); // 드래그 중임을 표시
         });
 
         grid.addEventListener('pointerup', () => { isDragging = false; });
 
-        function processFill(targetIdx) {
+        // 수정한 로직 부분
+        function processFill(targetIdx, dragging = false) {
             const currentSelectedDate = dateInput.value;
             const newState = [...currentData.state];
             
+            // 현재 마지막으로 채워진 인덱스 찾기
             let lastFilledIdx = -1;
             for(let i = 0; i < newState.length; i++) {
                 if(newState[i] !== null) lastFilledIdx = i;
             }
 
             if (targetIdx > lastFilledIdx) {
+                // 클릭한 곳이 마지막 채워진 곳보다 뒤라면: 클릭한 곳까지 채움
                 for (let i = 0; i <= targetIdx; i++) {
                     if (newState[i] === null) newState[i] = currentSelectedDate;
                 }
+            } else if (targetIdx === lastFilledIdx && !dragging) {
+                // 클릭한 곳이 정확히 마지막 채워진 곳이고 드래그가 아닐 때: 해당 칸 비움 (토글)
+                newState[targetIdx] = null;
             } else {
+                // 클릭한 곳이 마지막보다 앞이라면: 클릭한 곳 이후를 모두 비움
                 for (let i = newState.length - 1; i > targetIdx; i--) {
                     newState[i] = null;
                 }
