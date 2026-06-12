@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Math Tracker - Final Pro</title>
+    <title>Math Tracker - Green Edition</title>
     <style>
         * {
-            box-sizing: border-box; /* 1) 폭 오차 방지의 핵심 */
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
@@ -15,11 +15,11 @@
 
         :root {
             --bg-main: #ffffff;
-            --bg-sidebar: #f7f7f7; /* 4) 사이드바 연회색 */
+            --bg-sidebar: #f7f7f7;
             --border-color: #dddddd;
-            --box-border: #cccccc; /* 3) 네모칸 테두리 살짝 진하게 */
+            --box-border: #cccccc;
             --text-grey: #999999;
-            --dark-green: #166534;
+            --dark-green: #166534; /* 메인 테마 컬러 */
             --sidebar-width: 280px;
         }
 
@@ -33,7 +33,6 @@
             touch-action: none;
         }
 
-        /* 1, 4) 사이드바 디자인 및 폭 정렬 */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -48,12 +47,12 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             width: 100%;
             margin-bottom: 40px;
         }
 
-        /* 모든 입력창 폭 완전 일치 */
+        /* 모든 입력창 폭 일치 및 중앙 정렬 */
         .sidebar input {
             width: 100%;
             height: 50px;
@@ -65,56 +64,78 @@
             outline: none;
             display: flex;
             align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
-        /* 날짜 입력창: 중앙 정렬 및 디자인 */
         input[type="date"] {
             color: var(--dark-green) !important;
             font-weight: 700;
-            text-align: center;
-            justify-content: center;
-            appearance: none;
-            -webkit-appearance: none;
         }
 
         input::placeholder { color: #aaaaaa; }
 
-        /* 버튼 디자인: SAVED RECORDS와 같은 회색 글씨 */
-        .sidebar button {
+        /* CREATE, SAVE PROGRESS 버튼 구분 */
+        .sidebar button.main-btn {
             width: 100%;
             height: 50px;
             border-radius: 10px;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            border: 1px solid #e0e0e0;
-            background: #ffffff;
-            color: var(--text-grey);
+            border: none;
             text-transform: uppercase;
             letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .btn-create {
+            background: #000000 !important; /* 검정 배경 */
+            color: #ffffff !important;
+        }
+
+        .btn-save {
+            background: #666666 !important; /* 진회색 배경 */
+            color: #ffffff !important;
+            margin-top: 5px;
         }
 
         .history-title { 
             font-size: 11px; 
             font-weight: 800; 
             color: var(--text-grey); 
-            margin-bottom: 20px; 
+            margin: 30px 0 20px; 
             letter-spacing: 1.2px; 
             text-transform: uppercase;
         }
 
-        .history-list { display: flex; flex-direction: column; gap: 15px; }
-        .history-item { padding: 15px 0; border-bottom: 1px solid #eeeeee; }
-        .history-info { font-size: 14px; margin-bottom: 10px; display: block; line-height: 1.5; font-weight: 500; }
+        .history-list { display: flex; flex-direction: column; gap: 20px; }
+        .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
+        .history-info { font-size: 14px; margin-bottom: 12px; display: block; line-height: 1.5; font-weight: 600; }
         
-        .history-actions { display: flex; gap: 8px; }
-        .btn-load { height: 35px !important; flex: 1; font-size: 11px !important; }
+        /* 사진과 동일한 LOAD / DELETE 버튼 디자인 */
+        .history-actions { display: flex; gap: 8px; align-items: center; }
+        
+        .btn-load { 
+            background: #eeeeee !important; 
+            color: #000000 !important; 
+            border: none !important;
+            width: 70px !important;
+            height: 40px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+        }
+        
         .btn-del { 
-            height: 35px !important; flex: 1.2; font-size: 11px !important;
-            color: #ff3b30 !important; border-color: #ffcccc !important;
+            background: #ffffff !important; 
+            color: #ff3b30 !important; 
+            border: 1.5px solid #ff3b30 !important; 
+            flex: 1 !important;
+            height: 40px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
         }
 
         /* 메인 콘텐츠 영역 */
@@ -125,13 +146,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: var(--bg-main);
         }
 
-        .status-header { margin-bottom: 50px; }
-        .progress-text { font-size: 32px; font-weight: 300; letter-spacing: -0.5px; }
+        .status-header { margin-bottom: 40px; }
+        .progress-text { font-size: 32px; font-weight: 300; }
 
-        /* 2, 3) 네모칸 크기 및 테두리 수정 */
+        /* 네모칸 크기 및 테두리 */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(20, 1fr);
@@ -141,9 +161,9 @@
         }
 
         .box {
-            width: 28px; /* 크기 수정 */
-            height: 28px; /* 크기 수정 */
-            border: 1px solid var(--box-border); /* 테두리 조금 더 진하게 */
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--box-border);
             border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
@@ -162,8 +182,8 @@
             <input type="date" id="dateInput">
             <input type="text" id="nameInput" placeholder="항목 이름">
             <input type="number" id="totalInput" placeholder="총 문제 수">
-            <button class="btn-create" onclick="createNew()">CREATE</button>
-            <button id="saveBtn" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
+            <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
+            <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
         </div>
 
         <div class="history-title">SAVED RECORDS</div>
@@ -184,7 +204,6 @@
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
-        // 날짜 기본값
         const todayStr = new Date().toISOString().split('T')[0];
         dateInput.value = todayStr;
 
@@ -197,13 +216,13 @@
 
             currentData = {
                 id: Date.now(),
-                name: name || 'No Title',
+                name: name || '무제',
                 date: dateInput.value,
                 total: total,
                 state: Array(total).fill(null)
             };
             render();
-            document.getElementById('saveBtn').style.display = 'flex';
+            document.getElementById('saveBtn').style.display = 'block';
         }
 
         function render() {
@@ -217,12 +236,14 @@
 
                 if (dateVal) {
                     box.classList.add('filled');
+                    // 진초록 계열 농도 조절
                     if (dateVal === selectedDate) {
-                        box.style.backgroundColor = '#000000';
+                        box.style.backgroundColor = '#166534'; // 현재 날짜: 선명한 진초록
                     } else {
                         const diffDays = Math.floor((new Date(selectedDate) - new Date(dateVal)) / (1000 * 60 * 60 * 24));
-                        const opacity = Math.max(0.15, 0.5 - (diffDays * 0.08));
-                        box.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+                        // 과거일수록 연한 초록 (rgba의 투명도 조절)
+                        const opacity = Math.max(0.15, 0.6 - (diffDays * 0.1));
+                        box.style.backgroundColor = `rgba(22, 101, 52, ${opacity})`;
                     }
                 }
                 grid.appendChild(box);
@@ -282,17 +303,17 @@
         }
 
         function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
             else logs.push(JSON.parse(JSON.stringify(currentData)));
-            localStorage.setItem('math_logs_vFinal', JSON.stringify(logs));
+            localStorage.setItem('math_logs_vFinal_green', JSON.stringify(logs));
             renderHistory();
         }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
             list.innerHTML = '';
             logs.slice().reverse().forEach(log => {
                 const solved = log.state.filter(s => s !== null).length;
@@ -310,7 +331,7 @@
         }
 
         function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
@@ -318,15 +339,15 @@
                 document.getElementById('totalInput').value = currentData.total;
                 dateInput.value = currentData.date;
                 render();
-                document.getElementById('saveBtn').style.display = 'flex';
+                document.getElementById('saveBtn').style.display = 'block';
             }
         }
 
         function deleteData(id) {
             if(!confirm("삭제하시겠습니까?")) return;
-            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_vFinal_green') || '[]');
             logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('math_logs_vFinal', JSON.stringify(logs));
+            localStorage.setItem('math_logs_vFinal_green', JSON.stringify(logs));
             renderHistory();
         }
 
