@@ -67,14 +67,14 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            margin: 0 !important; /* 누락되었던 부분 복구 */
+            margin: 0 !important;
         }
 
         input[type="date"] {
             color: var(--muted-green) !important;
             font-weight: 700;
-            -webkit-appearance: none; /* 브라우저 기본 디자인 제거 (복구) */
-            appearance: none;         /* 브라우저 기본 디자인 제거 (복구) */
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input::placeholder { color: #aaaaaa; }
@@ -105,7 +105,11 @@
 
         .history-list { display: flex; flex-direction: column; gap: 20px; }
         .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
-        .history-info { font-size: 14px; margin-bottom: 12px; display: block; line-height: 1.5; font-weight: 600; }
+        
+        /* 기존 .history-info 대신 사용되는 클래스들 */
+        .history-info-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; line-height: 1.5; }
+        .history-info-sub { font-size: 14px; margin-bottom: 12px; line-height: 1.5; font-weight: 600; }
+        
         .history-actions { display: flex; gap: 8px; align-items: center; }
 
         .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; width: 70px !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
@@ -120,8 +124,35 @@
             align-items: center;
         }
 
-        .status-header { margin-bottom: 40px; }
+        /* 메인 헤더 영역 flex 속성 추가하여 양끝 정렬 */
+        .status-header { 
+            margin-bottom: 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%; 
+        }
         .progress-text { font-size: 32px; font-weight: 300; }
+
+        /* DONE 버튼 디자인 추가 */
+        .btn-done {
+            background: #ffffff;
+            border: 1.5px solid #e0e0e0;
+            color: #999999;
+            width: 70px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: none; /* 초기에는 숨김 */
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-done.is-done {
+            border-color: #569126;
+            color: #569126;
+        }
 
         .tracker-grid {
             display: grid;
@@ -163,12 +194,13 @@
     <div class="main-content">
         <div class="status-header">
             <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+            <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
         </div>
         <div id="trackerGrid" class="tracker-grid"></div>
     </div>
 
     <script>
-        let currentData = { id: null, name: '', date: '', total: 0, state: [] };
+        let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
         let isDragging = false;
         let lastProcessedIdx = -1;
 
@@ -188,12 +220,15 @@
                 name: name || '무제',
                 date: dateInput.value,
                 total: total,
-                state: Array(total).fill(null)
+                state: Array(total).fill(null),
+                done: false
             };
             
             initGridDOM();
             updateGridUI();
             document.getElementById('saveBtn').style.display = 'block';
+            document.getElementById('doneBtn').style.display = 'flex';
+            updateDoneBtnUI();
         }
 
         function initGridDOM() {
@@ -292,6 +327,9 @@
         }
 
         function saveData() {
+            // 변경된 이름값을 가져와서 반영 (이름 수정 후 저장 가능하게 처리)
+            currentData.name = document.getElementById('nameInput').value || '무제';
+            
             let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
@@ -306,10 +344,16 @@
             list.innerHTML = '';
             logs.slice().reverse().forEach(log => {
                 const solved = log.state.filter(s => s !== null).length;
+                const isDoneHtml = log.done ? `<span style="color:#569126; font-weight: 800;">✓</span>` : '';
+                
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 item.innerHTML = `
-                    <span class="history-info"><strong>${log.name}</strong><br>${log.date} (${solved}/${log.total})</span>
+                    <div class="history-info-title">
+                        <strong>${log.name}</strong>
+                        ${isDoneHtml}
+                    </div>
+                    <div class="history-info-sub">${log.date} (${solved}/${log.total})</div>
                     <div class="history-actions">
                         <button class="btn-load" onclick="loadData(${log.id})">LOAD</button>
                         <button class="btn-del" onclick="deleteData(${log.id})">DELETE</button>
@@ -324,12 +368,17 @@
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
+                if (currentData.done === undefined) currentData.done = false; // 구버전 데이터 호환
+                
                 document.getElementById('nameInput').value = currentData.name;
                 document.getElementById('totalInput').value = currentData.total;
                 dateInput.value = currentData.date;
                 initGridDOM();
                 updateGridUI();
+                
                 document.getElementById('saveBtn').style.display = 'block';
+                document.getElementById('doneBtn').style.display = 'flex';
+                updateDoneBtnUI();
             }
         }
 
@@ -339,6 +388,23 @@
             logs = logs.filter(l => l.id !== id);
             localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
             renderHistory();
+        }
+
+        // DONE 버튼 관련 추가된 함수
+        function toggleDone() {
+            if (!currentData.id) return;
+            currentData.done = !currentData.done;
+            updateDoneBtnUI();
+            saveData(); // 체크 여부 변경 시 자동으로 상태 업데이트
+        }
+
+        function updateDoneBtnUI() {
+            const btn = document.getElementById('doneBtn');
+            if (currentData.done) {
+                btn.classList.add('is-done');
+            } else {
+                btn.classList.remove('is-done');
+            }
         }
 
         renderHistory();
