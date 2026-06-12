@@ -12,7 +12,6 @@
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            /* 아이패드/모바일 길게 누를 시 텍스트 선택 및 메뉴 팝업 방지 추가 */
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -20,7 +19,6 @@
             user-select: none;
         }
 
-        /* 텍스트 입력, 날짜 등 input 태그는 정상적으로 입력 및 커서 선택이 되도록 예외 처리 추가 */
         input {
             -webkit-touch-callout: default !important;
             -webkit-user-select: auto !important;
@@ -113,7 +111,6 @@
 
         .btn-create { margin-bottom: 5px; }
 
-        /* 컬러 팔레트 스타일 추가 */
         .color-palette {
             display: flex;
             justify-content: center;
@@ -221,7 +218,17 @@
 
         .box.filled { border-color: transparent; }
 
-        /* 동기부여 문구 스타일 추가 */
+        /* ▼▼▼ 현우진 사진 & 문구 스타일 ▼▼▼ */
+        .hyun-image {
+            position: fixed;
+            bottom: 85px; /* 문구 위치 위로 배치 */
+            right: 40px;
+            width: 300px; /* 사진 크기 */
+            height: auto;
+            z-index: 99;
+            pointer-events: none; /* 클릭 방해 금지 */
+        }
+
         .motivation-text {
             position: fixed;
             bottom: 40px;
@@ -232,9 +239,13 @@
             z-index: 100;
         }
         
-        /* 텍스트가 비어있을 때는 아예 화면에서 사라지게 처리 */
         .motivation-text:empty {
             display: none;
+        }
+
+        @media (max-width: 768px) {
+            .hyun-image { width: 200px; bottom: 75px; right: 20px; }
+            .motivation-text { font-size: 18px; bottom: 30px; right: 20px; }
         }
 
         ::-webkit-scrollbar { width: 0; }
@@ -250,7 +261,6 @@
             <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
             <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
             
-            <!-- 컬러 팔레트 5단계 농도 -->
             <div id="colorPalette" class="color-palette" style="display: none;">
                 <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
                 <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
@@ -273,28 +283,24 @@
         </div>
     </div>
 
-    <!-- 
-      ▼▼▼ 동기부여 문구 입력란 ▼▼▼ 
-      아래 <div>와 </div> 사이에 원하는 문구를 입력하면 우측 하단에 나타납니다.
-      아무것도 적지 않고 <div class="motivation-text"></div> 형태로 붙여두면 화면에 나타나지 않습니다.
-    -->
+    <!-- 현우진 선생님 이미지 추가 -->
+    <img src="hyun.png" alt="현우진" class="hyun-image">
+    <!-- 동기부여 문구 -->
     <div class="motivation-text">존나게 해 제발 채은아.. 인생이 달렸어</div>
 
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
         let isDragging = false;
         let lastProcessedIdx = -1;
-        let activeColor = 'rgba(45, 90, 39, 1)'; // 기본 색상 (가장 어두운 진초록)
+        let activeColor = 'rgba(45, 90, 39, 1)'; 
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
         dateInput.value = new Date().toISOString().split('T')[0];
         
-        // 날짜를 바꾸더라도 이미 칠해진 네모의 색상이 바뀌지 않으므로, UI를 다시 그릴 필요가 줄었으나 데이터 정합성을 위해 남겨둠
         dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
 
-        // 팔레트 색상 선택 함수
         function selectColor(element, color) {
             document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
             element.classList.add('selected');
@@ -318,7 +324,6 @@
             initGridDOM();
             updateGridUI();
             
-            // 저장 버튼 및 컬러 팔레트, DONE 버튼 노출
             document.getElementById('saveBtn').style.display = 'block';
             document.getElementById('colorPalette').style.display = 'flex';
             document.getElementById('doneBtn').style.display = 'flex';
@@ -344,7 +349,6 @@
 
                 if (stateObj !== null) {
                     box.classList.add('filled');
-                    // 날짜 자동계산 로직을 없애고 저장된 색상을 그대로 입힘
                     box.style.backgroundColor = stateObj.color;
                 } else {
                     box.classList.remove('filled');
@@ -401,7 +405,6 @@
 
             if (targetIdx > lastFilledIdx) {
                 for (let i = 0; i <= targetIdx; i++) {
-                    // 새로 색칠할 때는 현재 선택된 컬러 팔레트의 색상을 객체로 저장
                     if (newState[i] === null) {
                         newState[i] = { date: currentSelectedDate, color: activeColor };
                     }
@@ -477,7 +480,6 @@
                 currentData = JSON.parse(JSON.stringify(target));
                 if (currentData.done === undefined) currentData.done = false; 
                 
-                // 구버전(날짜 문자열만 저장된 상태)을 신버전({date, color} 객체 형태)으로 마이그레이션 처리
                 currentData.state = currentData.state.map(s => {
                     if (s === null) return null;
                     if (typeof s === 'string') return { date: s, color: 'rgba(45, 90, 39, 1)' };
