@@ -31,7 +31,7 @@
             background-color: var(--bg-main);
             color: #000000;
             overflow: hidden;
-            touch-action: none; /* 펜슬/터치 간섭 방지 */
+            touch-action: none;
         }
 
         .sidebar {
@@ -53,6 +53,7 @@
             margin-bottom: 40px;
         }
 
+        /* 날짜 칸 폭 오차 해결 복구 */
         .sidebar input {
             width: 100% !important;
             height: 50px;
@@ -66,12 +67,17 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            margin: 0 !important; /* 누락되었던 부분 복구 */
         }
 
         input[type="date"] {
             color: var(--muted-green) !important;
             font-weight: 700;
+            -webkit-appearance: none; /* 브라우저 기본 디자인 제거 (복구) */
+            appearance: none;         /* 브라우저 기본 디자인 제거 (복구) */
         }
+
+        input::placeholder { color: #aaaaaa; }
 
         .sidebar button.main-btn {
             width: 100% !important;
@@ -85,20 +91,25 @@
             color: var(--text-grey);
             text-transform: uppercase;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .btn-create { margin-bottom: 5px; }
 
         .history-title { 
             font-size: 11px; font-weight: 800; color: var(--text-grey); 
-            margin: 30px 0 20px; text-transform: uppercase;
+            margin: 30px 0 20px; text-transform: uppercase; letter-spacing: 1.2px;
         }
 
         .history-list { display: flex; flex-direction: column; gap: 20px; }
         .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
-        .history-info { font-size: 14px; margin-bottom: 12px; display: block; font-weight: 600; }
-        .history-actions { display: flex; gap: 8px; }
+        .history-info { font-size: 14px; margin-bottom: 12px; display: block; line-height: 1.5; font-weight: 600; }
+        .history-actions { display: flex; gap: 8px; align-items: center; }
 
-        .btn-load { background: #eeeeee; border: none; width: 70px; height: 40px; border-radius: 8px; font-weight: 700; font-size: 11px; }
-        .btn-del { background: #ffffff; color: var(--muted-red); border: 1.5px solid var(--muted-red); flex: 1; height: 40px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; width: 70px !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
+        .btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
 
         .main-content {
             flex: 1;
@@ -128,7 +139,6 @@
             border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
-            /* transition 제거: 펜슬 입력 시 반응 속도를 높이기 위함 */
         }
 
         .box.filled { border-color: transparent; }
@@ -160,7 +170,7 @@
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [] };
         let isDragging = false;
-        let lastProcessedIdx = -1; // 중복 처리 방지용
+        let lastProcessedIdx = -1;
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
@@ -181,12 +191,11 @@
                 state: Array(total).fill(null)
             };
             
-            initGridDOM(); // DOM을 처음에 한 번만 생성
-            updateGridUI(); // 상태 업데이트
+            initGridDOM();
+            updateGridUI();
             document.getElementById('saveBtn').style.display = 'block';
         }
 
-        // 그리드 칸(DOM)을 처음에 한 번만 만드는 함수
         function initGridDOM() {
             grid.innerHTML = '';
             for (let i = 0; i < currentData.total; i++) {
@@ -197,7 +206,6 @@
             }
         }
 
-        // 상태 데이터에 맞춰 색상만 업데이트하는 함수 (깜빡임 방지 핵심)
         function updateGridUI() {
             const selectedDate = dateInput.value;
             const boxes = grid.querySelectorAll('.box');
@@ -248,7 +256,6 @@
         grid.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
             const idx = getTargetIdx(e);
-            // 펜슬의 미세한 움직임으로 같은 칸에서 이벤트가 중복 발생하는 것 방지
             if (idx !== null && idx !== lastProcessedIdx) {
                 lastProcessedIdx = idx;
                 processFill(idx, true);
@@ -281,10 +288,9 @@
                 }
             }
             currentData.state = newState;
-            updateGridUI(); // 전체 리렌더링 대신 UI 업데이트만 호출
+            updateGridUI();
         }
 
-        // 저장/로드 로직 유지
         function saveData() {
             let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
@@ -321,8 +327,8 @@
                 document.getElementById('nameInput').value = currentData.name;
                 document.getElementById('totalInput').value = currentData.total;
                 dateInput.value = currentData.date;
-                initGridDOM(); // 불러올 때 DOM 생성
-                updateGridUI(); // 색상 적용
+                initGridDOM();
+                updateGridUI();
                 document.getElementById('saveBtn').style.display = 'block';
             }
         }
