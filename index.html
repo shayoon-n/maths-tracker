@@ -12,7 +12,8 @@
             --border: #e0e0e0;
             --text-main: #000000;
             --text-sub: #666666;
-            --sidebar-width: 260px;
+            --sidebar-width: 280px;
+            --point-green: #10b981; /* 요청하신 초록색 */
         }
 
         body {
@@ -23,17 +24,18 @@
             background-color: var(--bg);
             color: var(--text-main);
             overflow: hidden;
-            touch-action: none; /* 드래그 선택 시 화면 스크롤 방지 */
+            /* 아이패드에서 드래그 시 화면이 밀리지 않도록 설정 */
+            touch-action: none;
         }
 
-        /* 왼쪽 사이드바 정렬 수정 */
+        /* 왼쪽 사이드바 정렬 및 폭 수정 */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 30px 20px;
+            padding: 40px 20px;
             box-sizing: border-box;
             overflow-y: auto;
         }
@@ -41,26 +43,37 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px; /* 입력창 간격 조절 */
             margin-bottom: 40px;
+            width: 100%;
+        }
+
+        /* 모든 입력창과 버튼의 폭을 100%로 통일 */
+        input, button {
+            width: 100% !important;
+            box-sizing: border-box;
+            -webkit-appearance: none; /* iOS 기본 스타일 제거 */
         }
 
         input {
-            width: 100%;
             padding: 12px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
+            border-radius: 8px;
+            font-size: 15px;
             outline: none;
             background: #fff;
         }
 
+        /* 날짜 입력창 텍스트 색상을 초록색으로 변경 */
+        input[type="date"] {
+            color: var(--point-green);
+            font-weight: 600;
+        }
+
         button {
-            width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             font-size: 14px;
@@ -68,22 +81,28 @@
         }
 
         .btn-create { background: #000; color: #fff; }
-        .btn-save { background: #666; color: #fff; margin-top: 10px; }
-        .btn-load { background: #eee; color: #000; flex: 1; padding: 8px; font-size: 12px; }
-        .btn-del { background: #fff; color: #ff3b30; border: 1px solid #ff3b30; padding: 8px; font-size: 12px; }
+        .btn-save { background: #666; color: #fff; margin-top: 5px; }
+        
+        /* 히스토리 버튼 정렬 */
+        .history-actions {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        .btn-load { background: #eee; color: #000; flex: 1; padding: 10px; font-size: 12px; }
+        .btn-del { background: #fff; color: #ff3b30; border: 1px solid #ff3b30; flex: 1; padding: 10px; font-size: 12px; }
 
         .history-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--text-sub);
-            margin-bottom: 15px;
+            color: #999;
+            margin-bottom: 20px;
             letter-spacing: 1px;
         }
 
-        .history-list { display: flex; flex-direction: column; gap: 12px; }
-        .history-item { border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        .history-info { font-size: 13px; margin-bottom: 8px; display: block; line-height: 1.4; }
-        .history-actions { display: flex; gap: 6px; }
+        .history-list { display: flex; flex-direction: column; gap: 20px; }
+        .history-item { padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .history-info { font-size: 14px; margin-bottom: 10px; display: block; line-height: 1.5; }
 
         /* 메인 콘텐츠 */
         .main-content {
@@ -96,26 +115,26 @@
         }
 
         .status-header { margin-bottom: 40px; text-align: center; }
-        .progress-text { font-size: 28px; font-weight: 300; letter-spacing: -1px; }
+        .progress-text { font-size: 28px; font-weight: 300; }
 
-        /* 그리드 가로 20칸 */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(20, 1fr);
-            gap: 6px;
+            gap: 8px;
             user-select: none;
+            /* 드래그 입력 중 화면 스크롤 방지 */
+            touch-action: none; 
         }
 
         .box {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border: 1px solid #d1d1d1;
-            border-radius: 2px;
+            border-radius: 4px;
             background: #fff;
-            transition: background 0.2s;
+            pointer-events: auto; /* 드래그 인식을 위해 설정 */
         }
 
-        /* 날짜별 무채색 농도 (오늘: 블랙, 과거: 그레이) */
         .box.filled-past { background-color: #bbbbbb; border-color: #bbbbbb; }
         .box.filled-today { background-color: #000000; border-color: #000000; }
 
@@ -126,146 +145,4 @@
 
     <div class="sidebar">
         <div class="input-group">
-            <input type="date" id="dateInput">
-            <input type="text" id="nameInput" placeholder="공부 항목 이름">
-            <input type="number" id="totalInput" placeholder="총 문제 수">
-            <button class="btn-create" onclick="createNew()">CREATE</button>
-            <button id="saveBtn" class="btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
-        </div>
-
-        <div class="history-title">SAVED RECORDS</div>
-        <div id="historyList" class="history-list"></div>
-    </div>
-
-    <div class="main-content">
-        <div class="status-header">
-            <div id="statusInfo" class="progress-text">0 / 0</div>
-        </div>
-        <div id="trackerGrid" class="tracker-grid"></div>
-    </div>
-
-    <script>
-        let currentData = { id: null, name: '', date: '', total: 0, state: [] };
-        let isDragging = false;
-        let dragMode = true; // true: 채우기 모드
-
-        const gridContainer = document.getElementById('trackerGrid');
-        document.getElementById('dateInput').valueAsDate = new Date();
-
-        function createNew() {
-            const total = parseInt(document.getElementById('totalInput').value);
-            if (!total) return;
-
-            currentData = {
-                id: Date.now(),
-                name: document.getElementById('nameInput').value || 'No Title',
-                date: document.getElementById('dateInput').value,
-                total: total,
-                state: Array(total).fill(null) // null: 비었음, 'YYYY-MM-DD': 채워진 날짜
-            };
-            render();
-            document.getElementById('saveBtn').style.display = 'block';
-        }
-
-        function render() {
-            gridContainer.innerHTML = '';
-            const today = document.getElementById('dateInput').value;
-
-            currentData.state.forEach((dateVal, idx) => {
-                const box = document.createElement('div');
-                box.className = 'box';
-                if (dateVal) {
-                    box.classList.add(dateVal === today ? 'filled-today' : 'filled-past');
-                }
-
-                // 마우스/터치 드래그 이벤트 전용 (아이패드 최적화)
-                box.onpointerdown = (e) => {
-                    isDragging = true;
-                    box.releasePointerCapture(e.pointerId); // 드래그 시 다른 요소 인식 허용
-                    toggleBox(idx);
-                };
-                box.onpointerenter = () => {
-                    if (isDragging) toggleBox(idx);
-                };
-
-                gridContainer.appendChild(box);
-            });
-            updateStatus();
-        }
-
-        // 핵심 로직: 순차적 입력 확인
-        function toggleBox(idx) {
-            const today = document.getElementById('dateInput').value;
-            
-            // 1. 채우기 조건: 첫 칸이거나 바로 앞 칸이 이미 채워져 있어야 함
-            if (!currentData.state[idx]) {
-                if (idx === 0 || currentData.state[idx - 1]) {
-                    currentData.state[idx] = today;
-                }
-            } 
-            // 2. 비우기 조건: 마지막 칸이거나 바로 뒷 칸이 비어 있어야 함
-            else {
-                if (idx === currentData.state.length - 1 || !currentData.state[idx + 1]) {
-                    currentData.state[idx] = null;
-                }
-            }
-            render();
-        }
-
-        window.onpointerup = () => { isDragging = false; };
-
-        function updateStatus() {
-            const solved = currentData.state.filter(s => s).length;
-            const percent = currentData.total > 0 ? Math.round((solved / currentData.total) * 100) : 0;
-            document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
-        }
-
-        function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_logs_v2') || '[]');
-            const idx = logs.findIndex(l => l.id === currentData.id);
-            if (idx > -1) logs[idx] = currentData;
-            else logs.push(currentData);
-            localStorage.setItem('math_logs_v2', JSON.stringify(logs));
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_logs_v2') || '[]');
-            list.innerHTML = '';
-            logs.reverse().forEach(log => {
-                const solved = log.state.filter(s => s).length;
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.innerHTML = `
-                    <span class="history-info"><strong>${log.name}</strong><br>${log.date} (${solved}/${log.total})</span>
-                    <div class="history-actions">
-                        <button class="btn-load" onclick="loadData(${log.id})">LOAD</button>
-                        <button class="btn-del" onclick="deleteData(${log.id})">DEL</button>
-                    </div>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_logs_v2') || '[]');
-            currentData = logs.find(l => l.id === id);
-            document.getElementById('nameInput').value = currentData.name;
-            document.getElementById('totalInput').value = currentData.total;
-            document.getElementById('dateInput').value = currentData.date;
-            render();
-            document.getElementById('saveBtn').style.display = 'block';
-        }
-
-        function deleteData(id) {
-            if (!confirm('삭제하시겠습니까?')) return;
-            let logs = JSON.parse(localStorage.getItem('math_logs_v2') || '[]');
-            localStorage.setItem('math_logs_v2', JSON.stringify(logs.filter(l => l.id !== id)));
-            renderHistory();
-        }
-
-        window.onload = renderHistory;
-    </script>
-</body>
-</html>
+            <input type="date" id="dateIn
