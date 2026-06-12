@@ -11,24 +11,22 @@
             --sidebar-bg: #fafafa;
             --border: #e0e0e0;
             --text-main: #000000;
-            --text-sub: #666666;
             --sidebar-width: 280px;
-            --point-green: #10b981; /* 요청하신 초록색 */
+            --point-green: #10b981;
         }
 
         body {
-            font-family: -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             display: flex;
             height: 100vh;
             background-color: var(--bg);
             color: var(--text-main);
             overflow: hidden;
-            /* 아이패드에서 드래그 시 화면이 밀리지 않도록 설정 */
-            touch-action: none;
+            touch-action: none; /* 브라우저 기본 제스처 방지 */
         }
 
-        /* 왼쪽 사이드바 정렬 및 폭 수정 */
+        /* 사이드바 정렬 */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--sidebar-bg);
@@ -43,68 +41,48 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* 입력창 간격 조절 */
+            gap: 15px;
             margin-bottom: 40px;
-            width: 100%;
-        }
-
-        /* 모든 입력창과 버튼의 폭을 100%로 통일 */
-        input, button {
-            width: 100% !important;
-            box-sizing: border-box;
-            -webkit-appearance: none; /* iOS 기본 스타일 제거 */
         }
 
         input {
+            width: 100%;
             padding: 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 15px;
+            box-sizing: border-box;
             outline: none;
-            background: #fff;
         }
 
-        /* 날짜 입력창 텍스트 색상을 초록색으로 변경 */
         input[type="date"] {
             color: var(--point-green);
-            font-weight: 600;
+            font-weight: bold;
         }
 
         button {
+            width: 100%;
             padding: 14px;
             border: none;
             border-radius: 8px;
             font-weight: 600;
-            cursor: pointer;
             font-size: 14px;
-            transition: 0.2s;
+            cursor: pointer;
         }
 
         .btn-create { background: #000; color: #fff; }
         .btn-save { background: #666; color: #fff; margin-top: 5px; }
-        
-        /* 히스토리 버튼 정렬 */
-        .history-actions {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-        .btn-load { background: #eee; color: #000; flex: 1; padding: 10px; font-size: 12px; }
-        .btn-del { background: #fff; color: #ff3b30; border: 1px solid #ff3b30; flex: 1; padding: 10px; font-size: 12px; }
 
-        .history-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #999;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-
+        .history-title { font-size: 11px; font-weight: 700; color: #999; margin: 30px 0 15px; letter-spacing: 1px; }
         .history-list { display: flex; flex-direction: column; gap: 20px; }
         .history-item { padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .history-info { font-size: 14px; margin-bottom: 10px; display: block; line-height: 1.5; }
+        
+        .history-actions { display: flex; gap: 8px; }
+        .btn-load { background: #eee; color: #000; flex: 1; padding: 10px; font-size: 12px; border-radius: 6px; }
+        .btn-del { background: #fff; color: #ff3b30; border: 1px solid #ff3b30; flex: 1; padding: 10px; font-size: 12px; border-radius: 6px; }
 
-        /* 메인 콘텐츠 */
+        /* 메인 영역 */
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -112,6 +90,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            touch-action: none;
         }
 
         .status-header { margin-bottom: 40px; text-align: center; }
@@ -121,9 +100,9 @@
             display: grid;
             grid-template-columns: repeat(20, 1fr);
             gap: 8px;
+            padding: 10px;
+            touch-action: none;
             user-select: none;
-            /* 드래그 입력 중 화면 스크롤 방지 */
-            touch-action: none; 
         }
 
         .box {
@@ -132,7 +111,7 @@
             border: 1px solid #d1d1d1;
             border-radius: 4px;
             background: #fff;
-            pointer-events: auto; /* 드래그 인식을 위해 설정 */
+            box-sizing: border-box;
         }
 
         .box.filled-past { background-color: #bbbbbb; border-color: #bbbbbb; }
@@ -166,18 +145,19 @@
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [] };
         let isDragging = false;
-        
-        const gridContainer = document.getElementById('trackerGrid');
-        document.getElementById('dateInput').valueAsDate = new Date();
+        let startIndex = -1;
+
+        const grid = document.getElementById('trackerGrid');
+        const dateInput = document.getElementById('dateInput');
+        dateInput.valueAsDate = new Date();
 
         function createNew() {
             const total = parseInt(document.getElementById('totalInput').value);
             if (!total) return;
-
             currentData = {
                 id: Date.now(),
                 name: document.getElementById('nameInput').value || 'No Title',
-                date: document.getElementById('dateInput').value,
+                date: dateInput.value,
                 total: total,
                 state: Array(total).fill(null)
             };
@@ -186,72 +166,18 @@
         }
 
         function render() {
-            gridContainer.innerHTML = '';
-            const today = document.getElementById('dateInput').value;
-
+            grid.innerHTML = '';
+            const today = dateInput.value;
             currentData.state.forEach((dateVal, idx) => {
                 const box = document.createElement('div');
                 box.className = 'box';
-                box.dataset.index = idx; // 인덱스 저장
+                box.dataset.index = idx;
                 if (dateVal) {
                     box.classList.add(dateVal === today ? 'filled-today' : 'filled-past');
                 }
-                gridContainer.appendChild(box);
+                grid.appendChild(box);
             });
             updateStatus();
-        }
-
-        // --- 애플펜슬/터치 드래그 핵심 로직 수정 ---
-        
-        // 터치 시작
-        gridContainer.addEventListener('pointerdown', (e) => {
-            if (e.target.classList.contains('box')) {
-                isDragging = true;
-                const idx = parseInt(e.target.dataset.index);
-                toggleBox(idx);
-                // 드래그 중 다른 요소 선택 방지
-                e.target.setPointerCapture(e.pointerId);
-            }
-        });
-
-        // 터치 이동 중 (드래그)
-        gridContainer.addEventListener('pointermove', (e) => {
-            if (!isDragging) return;
-            
-            // 현재 터치/펜슬 위치에 있는 요소 찾기
-            const actualTarget = document.elementFromPoint(e.clientX, e.clientY);
-            if (actualTarget && actualTarget.classList.contains('box')) {
-                const idx = parseInt(actualTarget.dataset.index);
-                toggleBox(idx);
-            }
-        });
-
-        // 터치 종료
-        gridContainer.addEventListener('pointerup', (e) => {
-            isDragging = false;
-        });
-
-        function toggleBox(idx) {
-            const today = document.getElementById('dateInput').value;
-            
-            // 채우기: 이전 칸이 차 있거나 첫 칸일 때만
-            if (!currentData.state[idx]) {
-                if (idx === 0 || currentData.state[idx - 1]) {
-                    if (currentData.state[idx] !== today) {
-                        currentData.state[idx] = today;
-                        render();
-                    }
-                }
-            } 
-            // 지우기: 다음 칸이 비어 있거나 마지막 칸일 때만
-            else {
-                if (idx === currentData.state.length - 1 || !currentData.state[idx + 1]) {
-                    if (currentData.state[idx] !== null) {
-                        currentData.state[idx] = null;
-                        render();
-                    }
-                }
-            }
         }
 
         function updateStatus() {
@@ -260,19 +186,80 @@
             document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
         }
 
+        // --- 드래그 로직 (애플펜슬 최적화) ---
+
+        function handlePointer(e) {
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            if (!target || !target.classList.contains('box')) return null;
+            return parseInt(target.dataset.index);
+        }
+
+        grid.addEventListener('pointerdown', (e) => {
+            const idx = handlePointer(e);
+            if (idx !== null) {
+                isDragging = true;
+                startIndex = idx;
+                processFill(idx);
+                grid.setPointerCapture(e.pointerId);
+            }
+        });
+
+        grid.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const idx = handlePointer(e);
+            if (idx !== null) {
+                processFill(idx);
+            }
+        });
+
+        grid.addEventListener('pointerup', () => {
+            isDragging = false;
+            startIndex = -1;
+        });
+
+        function processFill(targetIdx) {
+            const today = dateInput.value;
+            const solvedCount = currentData.state.filter(s => s).length;
+
+            // 순차적 입력 로직: 현재 채워진 마지막 인덱스 찾기
+            let lastFilledIdx = -1;
+            for(let i = currentData.state.length - 1; i >= 0; i--) {
+                if (currentData.state[i]) {
+                    lastFilledIdx = i;
+                    break;
+                }
+            }
+
+            // 채우기: 타겟 인덱스가 현재 채워진 끝점보다 뒤에 있을 때
+            if (targetIdx > lastFilledIdx) {
+                for (let i = 0; i <= targetIdx; i++) {
+                    if (!currentData.state[i]) currentData.state[i] = today;
+                }
+            } 
+            // 지우기: 타겟 인덱스가 채워진 영역 안쪽일 때 (뒤에서부터 지움)
+            else if (targetIdx <= lastFilledIdx) {
+                for (let i = currentData.state.length - 1; i > targetIdx; i--) {
+                    currentData.state[i] = null;
+                }
+            }
+            render();
+        }
+
+        // --- 저장 및 관리 로직 ---
+
         function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
             else logs.push(JSON.parse(JSON.stringify(currentData)));
-            localStorage.setItem('math_logs_v3', JSON.stringify(logs));
+            localStorage.setItem('math_logs_v4', JSON.stringify(logs));
             alert('SAVED');
             renderHistory();
         }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
             list.innerHTML = '';
             logs.reverse().forEach(log => {
                 const solved = log.state.filter(s => s).length;
@@ -290,23 +277,22 @@
         }
 
         function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
                 document.getElementById('nameInput').value = currentData.name;
                 document.getElementById('totalInput').value = currentData.total;
-                document.getElementById('dateInput').value = currentData.date;
+                dateInput.value = currentData.date;
                 render();
                 document.getElementById('saveBtn').style.display = 'block';
-                window.scrollTo(0,0);
             }
         }
 
         function deleteData(id) {
             if (!confirm('정말 삭제할까요?')) return;
-            let logs = JSON.parse(localStorage.getItem('math_logs_v3') || '[]');
-            localStorage.setItem('math_logs_v3', JSON.stringify(logs.filter(l => l.id !== id)));
+            let logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
+            localStorage.setItem('math_logs_v4', JSON.stringify(logs.filter(l => l.id !== id)));
             renderHistory();
         }
 
