@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Math Tracker</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg);
+            overflow: hidden;
+        }
+
+        /* 왼쪽 사이드바 (기록 및 설정) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .btn-create { background: var(--primary); color: white; }
+        .btn-save { background: #10b981; color: white; }
+        .btn-load { background: #f1f5f9; color: #475569; padding: 6px; font-size: 12px; width: auto; }
+        .btn-del { background: #fee2e2; color: #ef4444; padding: 6px; font-size: 12px; width: auto; }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #64748b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .history-item-info {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* 오른쪽 메인 화면 (트래커) */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .progress-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .tracker-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 1fr); /* 가로 20칸 고정 */
+            gap: 8px;
+            max-width: 900px; /* 아이패드 가로 폭에 적당한 크기 */
+        }
+
+        .box {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .box.checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        /* 아이패드 스크롤바 숨기기 */
+        ::-webkit-scrollbar { width: 0; background: transparent; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="input-section">
+            <input type="date" id="dateInput">
+            <input type="text" id="nameInput" placeholder="공부 항목 이름">
+            <input type="number" id="totalInput" placeholder="총 문제 수 (예: 118)">
+            <button class="btn-create" onclick="createNew()">새로 만들기</button>
+            <button id="saveBtn" class="btn-save" style="display:none;" onclick="saveData()">저장하기</button>
+        </div>
+
+        <div class="history-title">Saved Records</div>
+        <div id="historyList" class="history-list"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="status-header">
+            <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+        </div>
+        <div id="trackerGrid" class="tracker-grid"></div>
+    </div>
+
+    <script>
+        let currentData = { id: null, name: '', date: '', total: 0, state: [] };
+        const gridContainer = document.getElementById('trackerGrid');
+
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        function createNew() {
+            const total = parseInt(document.getElementById('totalInput').value);
+            if (!total || total <= 0) return alert('총 문제 수를 입력해주세요.');
+
+            currentData = {
+                id: Date.now(),
+                name: document.getElementById('nameInput').value || 'Unnamed',
+                date: document.getElementById('dateInput').value,
+                total: total,
+                state: Array(total).fill(false)
+            };
+            
+            render();
+            document.getElementById('saveBtn').style.display = 'block';
+        }
+
+        function render() {
+            gridContainer.innerHTML = '';
+            currentData.state.forEach((isDone, idx) => {
+                const box = document.createElement('div');
+                box.className = 'box' + (isDone ? ' checked' : '');
+                box.onclick = () => {
+                    currentData.state[idx] = !currentData.state[idx];
+                    box.classList.toggle('checked');
+                    updateStatus();
+                };
+                gridContainer.appendChild(box);
+            });
+            updateStatus();
+        }
+
+        function updateStatus() {
+            const solved = currentData.state.filter(s => s).length;
+            const percent = currentData.total > 0 ? Math.round((solved / currentData.total) * 100) : 0;
+            document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
+        }
+
+        function saveData() {
+            let logs = JSON.parse(localStorage.getItem('math_logs') || '[]');
+            const idx = logs.findIndex(l => l.id === currentData.id);
+            if (idx > -1) logs[idx] = currentData;
+            else logs.push(currentData);
+            
+            localStorage.setItem('math_logs', JSON.stringify(logs));
+            alert('저장되었습니다.');
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const logs = JSON.parse(localStorage.getItem('math_logs') || '[]');
+            list.innerHTML = '';
+            
+            logs.reverse().forEach(log => {
+                const solved = log.state.filter(s => s).length;
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <span class="history-item-info">${log.date}<br>${log.name} (${solved}/${log.total})</span>
+                    <div class="history-actions">
+                        <button class="btn-load" onclick="loadData(${log.id})">불러오기</button>
+                        <button class="btn-del" onclick="deleteData(${log.id})">삭제</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function loadData(id) {
+            const logs = JSON.parse(localStorage.getItem('math_logs') || '[]');
+            const target = logs.find(l => l.id === id);
+            if (target) {
+                currentData = target;
+                document.getElementById('nameInput').value = target.name;
+                document.getElementById('totalInput').value = target.total;
+                document.getElementById('dateInput').value = target.date;
+                render();
+                document.getElementById('saveBtn').style.display = 'block';
+            }
+        }
+
+        function deleteData(id) {
+            if (confirm('삭제할까요?')) {
+                let logs = JSON.parse(localStorage.getItem('math_logs') || '[]');
+                localStorage.setItem('math_logs', JSON.stringify(logs.filter(l => l.id !== id)));
+                renderHistory();
+            }
+        }
+
+        window.onload = renderHistory;
+    </script>
+</body>
+</html>
