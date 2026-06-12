@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Math Tracker</title>
+    <title>Math Tracker - Clean White</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,28 +15,27 @@
 
         :root {
             --bg: #ffffff;
-            --sidebar-bg: #fafafa;
-            --border: #e0e0e0;
-            --text-main: #000000;
+            --border: #eeeeee;
+            --text-grey: #999999; /* SAVED RECORDS와 동일한 회색 */
+            --dark-green: #166534;
             --sidebar-width: 280px;
-            --dark-green: #166534; /* 요청하신 진한 초록색 */
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
             height: 100vh;
             background-color: var(--bg);
-            color: var(--text-main);
+            color: #000000;
             overflow: hidden;
-            touch-action: none; /* 드래그 시 화면 밀림 방지 */
+            touch-action: none;
         }
 
-        /* 왼쪽 사이드바 */
+        /* 사이드바 디자인 - 올 화이트 */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
-            background: var(--sidebar-bg);
+            background: var(--bg);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
@@ -47,79 +46,89 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
             width: 100%;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
+        /* 입력창 공통 스타일 */
         .sidebar input {
             display: block;
             width: 100%;
-            height: 50px;
+            height: 55px;
             padding: 0 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             border: 1px solid var(--border);
             background: #ffffff;
-            color: #000000;
             outline: none;
         }
 
-        /* 1) 날짜 설정: 진한 초록색 */
+        /* 날짜 설정: 진한 초록색, 중앙 정렬 */
         input[type="date"] {
             color: var(--dark-green) !important;
             font-weight: 700;
             text-align: center;
         }
 
-        /* 2) 항목 이름, 문항 수: 흰색 칸, 회색 글씨(placeholder) */
+        /* 항목 이름, 문항 수 플레이스홀더 */
         input::placeholder {
-            color: #aaaaaa;
+            color: #cccccc;
         }
 
+        /* 버튼 스타일: 배경 흰색, 글씨 회색 */
         .sidebar button {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: 50px;
-            border-radius: 10px;
-            font-size: 15px;
+            height: 55px;
+            border-radius: 12px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            border: none;
-            transition: opacity 0.2s;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: var(--text-grey); /* 요청하신 회색 적용 */
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-create { background: #000000; color: #ffffff; }
-        .btn-save { background: #666666; color: #ffffff; margin-top: 5px; }
+        .sidebar button:active {
+            background: #f9f9f9;
+        }
 
-        /* 저장 기록 섹션 */
+        /* SAVED RECORDS 타이틀 */
         .history-title { 
-            font-size: 11px; 
-            font-weight: 700; 
-            color: #999999; 
-            margin: 30px 0 15px; 
-            letter-spacing: 1px; 
+            font-size: 12px; 
+            font-weight: 800; 
+            color: var(--text-grey); 
+            margin-bottom: 20px; 
+            letter-spacing: 1.5px; 
+            text-transform: uppercase;
         }
 
         .history-list { display: flex; flex-direction: column; gap: 15px; }
         .history-item { 
-            padding: 15px 0; 
-            border-bottom: 1px solid #eeeeee; 
+            padding: 20px 0; 
+            border-bottom: 1px solid #f5f5f5; 
         }
         .history-info { 
             font-size: 14px; 
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
             display: block; 
-            line-height: 1.4;
+            line-height: 1.6;
+            font-weight: 500;
         }
         
-        .history-actions { display: flex; gap: 8px; }
-        .btn-load { background: #eeeeee; color: #000000; height: 35px; flex: 1; border-radius: 5px; }
+        .history-actions { display: flex; gap: 10px; }
+        
+        /* 기록 관리용 버튼 */
+        .btn-load { height: 40px !important; flex: 1; font-size: 12px !important; }
         .btn-del { 
-            background: #ffffff; color: #ff3b30; border: 1px solid #ff3b30; 
-            height: 35px; flex: 1; border-radius: 5px; 
+            height: 40px !important; flex: 1; font-size: 12px !important;
+            color: #ff3b30 !important; border-color: #ffe5e5 !important;
         }
 
         /* 메인 콘텐츠 구역 */
@@ -130,35 +139,35 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-color: #ffffff;
         }
 
-        .status-header { margin-bottom: 40px; }
+        .status-header { margin-bottom: 50px; }
         .progress-text { 
-            font-size: 32px; 
-            font-weight: 400; 
-            color: #000000;
+            font-size: 36px; 
+            font-weight: 300; 
+            color: #333333;
         }
 
-        /* 3) 가로 20개 그리드 설정 */
+        /* 20칸 그리드 설정 */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(20, 1fr);
-            gap: 8px;
+            gap: 10px;
             padding: 10px;
             user-select: none;
-            -webkit-user-select: none;
         }
 
         .box {
-            width: 32px;
-            height: 32px;
-            border: 1px solid #d1d1d1;
-            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
             background: #ffffff;
             cursor: pointer;
         }
 
-        /* 4) 채워진 칸: 검은색 */
+        /* 채워진 칸: 검은색 */
         .box.filled { 
             background-color: #000000; 
             border-color: #000000; 
@@ -175,7 +184,7 @@
             <input type="text" id="nameInput" placeholder="항목 이름">
             <input type="number" id="totalInput" placeholder="총 문제 수">
             <button class="btn-create" onclick="createNew()">CREATE</button>
-            <button id="saveBtn" class="btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
+            <button id="saveBtn" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
         </div>
 
         <div class="history-title">SAVED RECORDS</div>
@@ -196,33 +205,30 @@
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
-        // 초기 날짜 설정
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
+        // 오늘 날짜 기본 세팅
+        const todayStr = new Date().toISOString().split('T')[0];
+        dateInput.value = todayStr;
 
-        // 1. 새로운 트래커 생성
+        // 1. 트래커 생성
         function createNew() {
             const total = parseInt(document.getElementById('totalInput').value);
             const name = document.getElementById('nameInput').value;
             
-            if (!total || total <= 0) {
-                alert("총 문제 수를 입력해주세요.");
-                return;
-            }
+            if (!total || total <= 0) return;
 
             currentData = {
                 id: Date.now(),
                 name: name || '무제',
                 date: dateInput.value,
                 total: total,
-                state: Array(total).fill(false) // false: 빈칸, true: 색칠
+                state: Array(total).fill(false)
             };
 
             render();
-            document.getElementById('saveBtn').style.display = 'block';
+            document.getElementById('saveBtn').style.display = 'flex';
         }
 
-        // 2. 그리드 및 상태 업데이트
+        // 2. 그리드 렌더링
         function render() {
             grid.innerHTML = '';
             currentData.state.forEach((isFilled, idx) => {
@@ -240,7 +246,7 @@
             document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
         }
 
-        // 3. 드래그/터치 로직 (애플펜슬 대응)
+        // 3. 드래그 및 터치 기능 (애플펜슬 최적화)
         function handlePointer(e) {
             const target = document.elementFromPoint(e.clientX, e.clientY);
             if (!target || !target.classList.contains('box')) return null;
@@ -251,7 +257,7 @@
             const idx = handlePointer(e);
             if (idx !== null) {
                 isDragging = true;
-                toggleTo(idx);
+                processToggle(idx);
                 grid.setPointerCapture(e.pointerId);
             }
         });
@@ -259,27 +265,21 @@
         grid.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
             const idx = handlePointer(e);
-            if (idx !== null) toggleTo(idx);
+            if (idx !== null) processToggle(idx);
         });
 
         grid.addEventListener('pointerup', () => { isDragging = false; });
 
-        // 순차적으로 채우는 로직
-        function toggleTo(targetIdx) {
-            // 선택한 칸까지 모두 채우기 (순차적 채우기)
+        function processToggle(targetIdx) {
             const newState = [...currentData.state];
-            
-            // 현재 몇 칸이나 채워져 있는지 확인
             let lastFilled = -1;
             for(let i = 0; i < newState.length; i++) {
                 if(newState[i]) lastFilled = i;
             }
 
             if (targetIdx > lastFilled) {
-                // 더 뒤를 누르면 거기까지 채움
                 for (let i = 0; i <= targetIdx; i++) newState[i] = true;
             } else {
-                // 이미 채워진 곳 중간을 누르면 거기서부터 뒤를 지움
                 for (let i = newState.length - 1; i > targetIdx; i--) newState[i] = false;
             }
 
@@ -287,26 +287,23 @@
             render();
         }
 
-        // 5. 기록 저장 (LocalStorage)
+        // 4. 저장 및 삭제 기능
         function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_tracker_logs') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_tracker_clean') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
             else logs.push(JSON.parse(JSON.stringify(currentData)));
             
-            localStorage.setItem('math_tracker_logs', JSON.stringify(logs));
-            alert('기록이 저장되었습니다.');
+            localStorage.setItem('math_tracker_clean', JSON.stringify(logs));
             renderHistory();
         }
 
-        // 6. 기록 목록 표시 및 삭제
         function renderHistory() {
             const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_tracker_logs') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_tracker_clean') || '[]');
             list.innerHTML = '';
             
-            // 최신순 정렬
             logs.slice().reverse().forEach(log => {
                 const solved = log.state.filter(s => s).length;
                 const item = document.createElement('div');
@@ -326,7 +323,7 @@
         }
 
         function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_tracker_logs') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_tracker_clean') || '[]');
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
@@ -334,19 +331,19 @@
                 document.getElementById('totalInput').value = currentData.total;
                 dateInput.value = currentData.date;
                 render();
-                document.getElementById('saveBtn').style.display = 'block';
+                document.getElementById('saveBtn').style.display = 'flex';
             }
         }
 
         function deleteData(id) {
-            if(!confirm("이 기록을 삭제할까요?")) return;
-            let logs = JSON.parse(localStorage.getItem('math_tracker_logs') || '[]');
+            if(!confirm("삭제하시겠습니까?")) return;
+            let logs = JSON.parse(localStorage.getItem('math_tracker_clean') || '[]');
             logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('math_tracker_logs', JSON.stringify(logs));
+            localStorage.setItem('math_tracker_clean', JSON.stringify(logs));
             renderHistory();
         }
 
-        // 초기 실행
+        // 앱 시작 시 기록 불러오기
         renderHistory();
 
     </script>
