@@ -6,83 +6,107 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Math Tracker</title>
     <style>
+        /* 모든 요소의 여백과 박스 계산 방식 초기화 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         :root {
             --bg: #ffffff;
             --sidebar-bg: #fafafa;
             --border: #e0e0e0;
             --text-main: #000000;
             --sidebar-width: 280px;
-            --point-green: #10b981;
+            --dark-green: #166534; /* 요청하신 진한 초록색 */
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
             display: flex;
             height: 100vh;
             background-color: var(--bg);
             color: var(--text-main);
             overflow: hidden;
-            touch-action: none; /* 브라우저 기본 제스처 방지 */
+            touch-action: none;
         }
 
-        /* 사이드바 정렬 */
+        /* 왼쪽 사이드바 영역 */
         .sidebar {
             width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             padding: 40px 20px;
-            box-sizing: border-box;
             overflow-y: auto;
         }
 
+        /* 입력창 그룹: 내부 요소들이 정확히 꽉 차도록 설정 */
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 40px;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 30px;
         }
 
-        input {
-            width: 100%;
-            padding: 12px;
+        /* 날짜, 텍스트 입력창, 버튼의 스타일 및 폭 통일 */
+        .sidebar input, 
+        .sidebar button {
+            display: block;
+            width: 100%; /* 부모 너비에 100% 맞춤 */
+            height: 48px; /* 높이 통일 */
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 16px;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 15px;
-            box-sizing: border-box;
+            background: #fff;
             outline: none;
+            -webkit-appearance: none; /* iOS 기본 스타일 강제 제거 */
         }
 
+        /* 날짜 입력창 텍스트 색상: 진초록 */
         input[type="date"] {
-            color: var(--point-green);
-            font-weight: bold;
+            color: var(--dark-green);
+            font-weight: 700;
+            font-family: inherit;
         }
 
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
+        /* 버튼 스타일 */
+        .sidebar button {
             cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            padding: 0; /* 내부 패딩에 의한 틀어짐 방지 */
+            line-height: 48px; /* 텍스트 중앙 정렬 */
         }
 
         .btn-create { background: #000; color: #fff; }
-        .btn-save { background: #666; color: #fff; margin-top: 5px; }
+        .btn-save { background: #666; color: #fff; margin-top: 4px; }
 
-        .history-title { font-size: 11px; font-weight: 700; color: #999; margin: 30px 0 15px; letter-spacing: 1px; }
+        .history-title { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #aaa; 
+            margin: 30px 0 15px; 
+            letter-spacing: 1px; 
+        }
+
         .history-list { display: flex; flex-direction: column; gap: 20px; }
         .history-item { padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .history-info { font-size: 14px; margin-bottom: 10px; display: block; line-height: 1.5; }
+        .history-info { font-size: 14px; margin-bottom: 12px; display: block; line-height: 1.5; }
         
-        .history-actions { display: flex; gap: 8px; }
-        .btn-load { background: #eee; color: #000; flex: 1; padding: 10px; font-size: 12px; border-radius: 6px; }
-        .btn-del { background: #fff; color: #ff3b30; border: 1px solid #ff3b30; flex: 1; padding: 10px; font-size: 12px; border-radius: 6px; }
+        /* 히스토리 버튼 폭 맞추기 */
+        .history-actions { display: flex; gap: 8px; width: 100%; }
+        .btn-load { background: #eee; color: #000; flex: 1; height: 38px; line-height: 38px; border-radius: 6px; font-size: 12px; }
+        .btn-del { background: #fff; color: #ff3b30; border: 1px solid #ff3b30; flex: 1; height: 38px; line-height: 38px; border-radius: 6px; font-size: 12px; }
 
-        /* 메인 영역 */
+        /* 메인 콘텐츠 영역 */
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -90,18 +114,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            touch-action: none;
         }
 
-        .status-header { margin-bottom: 40px; text-align: center; }
+        .status-header { margin-bottom: 40px; }
         .progress-text { font-size: 28px; font-weight: 300; }
 
+        /* 그리드 영역 */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(20, 1fr);
             gap: 8px;
             padding: 10px;
-            touch-action: none;
             user-select: none;
         }
 
@@ -111,7 +134,6 @@
             border: 1px solid #d1d1d1;
             border-radius: 4px;
             background: #fff;
-            box-sizing: border-box;
         }
 
         .box.filled-past { background-color: #bbbbbb; border-color: #bbbbbb; }
@@ -125,7 +147,7 @@
     <div class="sidebar">
         <div class="input-group">
             <input type="date" id="dateInput">
-            <input type="text" id="nameInput" placeholder="공부 항목 이름">
+            <input type="text" id="nameInput" placeholder="항목 이름">
             <input type="number" id="totalInput" placeholder="총 문제 수">
             <button class="btn-create" onclick="createNew()">CREATE</button>
             <button id="saveBtn" class="btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
@@ -145,7 +167,6 @@
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [] };
         let isDragging = false;
-        let startIndex = -1;
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
@@ -186,8 +207,7 @@
             document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
         }
 
-        // --- 드래그 로직 (애플펜슬 최적화) ---
-
+        /* --- 애플펜슬 훑기 최적화 로직 --- */
         function handlePointer(e) {
             const target = document.elementFromPoint(e.clientX, e.clientY);
             if (!target || !target.classList.contains('box')) return null;
@@ -198,7 +218,6 @@
             const idx = handlePointer(e);
             if (idx !== null) {
                 isDragging = true;
-                startIndex = idx;
                 processFill(idx);
                 grid.setPointerCapture(e.pointerId);
             }
@@ -207,37 +226,23 @@
         grid.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
             const idx = handlePointer(e);
-            if (idx !== null) {
-                processFill(idx);
-            }
+            if (idx !== null) processFill(idx);
         });
 
-        grid.addEventListener('pointerup', () => {
-            isDragging = false;
-            startIndex = -1;
-        });
+        grid.addEventListener('pointerup', () => { isDragging = false; });
 
         function processFill(targetIdx) {
             const today = dateInput.value;
-            const solvedCount = currentData.state.filter(s => s).length;
-
-            // 순차적 입력 로직: 현재 채워진 마지막 인덱스 찾기
             let lastFilledIdx = -1;
             for(let i = currentData.state.length - 1; i >= 0; i--) {
-                if (currentData.state[i]) {
-                    lastFilledIdx = i;
-                    break;
-                }
+                if (currentData.state[i]) { lastFilledIdx = i; break; }
             }
 
-            // 채우기: 타겟 인덱스가 현재 채워진 끝점보다 뒤에 있을 때
             if (targetIdx > lastFilledIdx) {
                 for (let i = 0; i <= targetIdx; i++) {
                     if (!currentData.state[i]) currentData.state[i] = today;
                 }
-            } 
-            // 지우기: 타겟 인덱스가 채워진 영역 안쪽일 때 (뒤에서부터 지움)
-            else if (targetIdx <= lastFilledIdx) {
+            } else {
                 for (let i = currentData.state.length - 1; i > targetIdx; i--) {
                     currentData.state[i] = null;
                 }
@@ -245,21 +250,20 @@
             render();
         }
 
-        // --- 저장 및 관리 로직 ---
-
+        /* --- 데이터 저장 및 불러오기 --- */
         function saveData() {
-            let logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
+            let logs = JSON.parse(localStorage.getItem('math_logs_v5') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
             else logs.push(JSON.parse(JSON.stringify(currentData)));
-            localStorage.setItem('math_logs_v4', JSON.stringify(logs));
+            localStorage.setItem('math_logs_v5', JSON.stringify(logs));
             alert('SAVED');
             renderHistory();
         }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
-            const logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_v5') || '[]');
             list.innerHTML = '';
             logs.reverse().forEach(log => {
                 const solved = log.state.filter(s => s).length;
@@ -277,7 +281,7 @@
         }
 
         function loadData(id) {
-            const logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
+            const logs = JSON.parse(localStorage.getItem('math_logs_v5') || '[]');
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
@@ -290,9 +294,9 @@
         }
 
         function deleteData(id) {
-            if (!confirm('정말 삭제할까요?')) return;
-            let logs = JSON.parse(localStorage.getItem('math_logs_v4') || '[]');
-            localStorage.setItem('math_logs_v4', JSON.stringify(logs.filter(l => l.id !== id)));
+            if (!confirm('삭제하시겠습니까?')) return;
+            let logs = JSON.parse(localStorage.getItem('math_logs_v5') || '[]');
+            localStorage.setItem('math_logs_v5', JSON.stringify(logs.filter(l => l.id !== id)));
             renderHistory();
         }
 
