@@ -53,7 +53,6 @@
             margin-bottom: 40px;
         }
 
-        /* 날짜 칸 폭 오차 해결 복구 */
         .sidebar input {
             width: 100% !important;
             height: 50px;
@@ -106,7 +105,6 @@
         .history-list { display: flex; flex-direction: column; gap: 20px; }
         .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
         
-        /* 기존 .history-info 대신 사용되는 클래스들 */
         .history-info-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; line-height: 1.5; }
         .history-info-sub { font-size: 14px; margin-bottom: 12px; line-height: 1.5; font-weight: 600; }
         
@@ -124,18 +122,29 @@
             align-items: center;
         }
 
-        /* 메인 헤더 영역 flex 속성 추가하여 양끝 정렬 */
+        /* 중앙 정렬과 우측 정렬 기준이 될 래퍼 추가 */
+        .tracker-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: max-content; /* 내부 컨텐츠(그리드)의 가로 길이에 맞춤 */
+            position: relative;
+        }
+
+        /* 텍스트는 중앙 정렬, 상대적 위치 설정 */
         .status-header { 
             margin-bottom: 40px; 
             display: flex; 
-            justify-content: space-between; 
+            justify-content: center; /* 텍스트를 정확히 중앙에 배치 */
             align-items: center; 
             width: 100%; 
+            position: relative; 
         }
         .progress-text { font-size: 32px; font-weight: 300; }
 
-        /* DONE 버튼 디자인 추가 */
+        /* DONE 버튼을 부모 기준 우측 끝(그리드 우측선 일치)에 고정 */
         .btn-done {
+            position: absolute;
+            right: 10px; /* tracker-grid의 padding: 10px과 동일하게 맞춤 */
             background: #ffffff;
             border: 1.5px solid #e0e0e0;
             color: #999999;
@@ -145,7 +154,7 @@
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
-            display: none; /* 초기에는 숨김 */
+            display: none; 
             align-items: center;
             justify-content: center;
         }
@@ -192,11 +201,14 @@
     </div>
 
     <div class="main-content">
-        <div class="status-header">
-            <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
-            <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
+        <!-- 네모칸과 헤더를 같이 감싸는 래퍼 -->
+        <div class="tracker-wrapper">
+            <div class="status-header">
+                <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+                <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
+            </div>
+            <div id="trackerGrid" class="tracker-grid"></div>
         </div>
-        <div id="trackerGrid" class="tracker-grid"></div>
     </div>
 
     <script>
@@ -327,9 +339,30 @@
         }
 
         function saveData() {
-            // 변경된 이름값을 가져와서 반영 (이름 수정 후 저장 가능하게 처리)
+            // 변경된 이름값 반영
             currentData.name = document.getElementById('nameInput').value || '무제';
             
+            // 변경된 총 문제 수 반영 처리 (새로 추가된 로직)
+            const newTotalStr = document.getElementById('totalInput').value;
+            const newTotal = parseInt(newTotalStr);
+            
+            if (!isNaN(newTotal) && newTotal > 0 && newTotal !== currentData.total) {
+                const oldState = currentData.state;
+                currentData.total = newTotal;
+                
+                // 새로운 크기의 배열을 만들고 기존 데이터 복사 (네모칸 수가 줄어들 경우 초과분은 삭제됨)
+                const newState = Array(newTotal).fill(null);
+                for (let i = 0; i < Math.min(oldState.length, newTotal); i++) {
+                    newState[i] = oldState[i];
+                }
+                currentData.state = newState;
+                
+                // 그리드 즉시 재생성 및 UI 반영
+                initGridDOM();
+                updateGridUI();
+            }
+
+            // 로컬 스토리지에 저장
             let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
             if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
@@ -368,7 +401,7 @@
             const target = logs.find(l => l.id === id);
             if (target) {
                 currentData = JSON.parse(JSON.stringify(target));
-                if (currentData.done === undefined) currentData.done = false; // 구버전 데이터 호환
+                if (currentData.done === undefined) currentData.done = false; 
                 
                 document.getElementById('nameInput').value = currentData.name;
                 document.getElementById('totalInput').value = currentData.total;
@@ -390,12 +423,11 @@
             renderHistory();
         }
 
-        // DONE 버튼 관련 추가된 함수
         function toggleDone() {
             if (!currentData.id) return;
             currentData.done = !currentData.done;
             updateDoneBtnUI();
-            saveData(); // 체크 여부 변경 시 자동으로 상태 업데이트
+            saveData(); 
         }
 
         function updateDoneBtnUI() {
