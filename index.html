@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Math Tracker - Muted Green</title>
+    <title>Math Tracker - Optimized</title>
     <style>
         * {
             box-sizing: border-box !important;
@@ -31,7 +31,7 @@
             background-color: var(--bg-main);
             color: #000000;
             overflow: hidden;
-            touch-action: none;
+            touch-action: none; /* 펜슬/터치 간섭 방지 */
         }
 
         .sidebar {
@@ -66,17 +66,12 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            margin: 0 !important;
         }
 
         input[type="date"] {
             color: var(--muted-green) !important;
             font-weight: 700;
-            -webkit-appearance: none;
-            appearance: none;
         }
-
-        input::placeholder { color: #aaaaaa; }
 
         .sidebar button.main-btn {
             width: 100% !important;
@@ -90,49 +85,20 @@
             color: var(--text-grey);
             text-transform: uppercase;
             letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .btn-create { margin-bottom: 5px; }
-
         .history-title { 
-            font-size: 11px; 
-            font-weight: 800; 
-            color: var(--text-grey); 
-            margin: 30px 0 20px; 
-            letter-spacing: 1.2px; 
-            text-transform: uppercase;
+            font-size: 11px; font-weight: 800; color: var(--text-grey); 
+            margin: 30px 0 20px; text-transform: uppercase;
         }
 
         .history-list { display: flex; flex-direction: column; gap: 20px; }
         .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
-        .history-info { font-size: 14px; margin-bottom: 12px; display: block; line-height: 1.5; font-weight: 600; }
-        
-        .history-actions { display: flex; gap: 8px; align-items: center; }
-        
-        .btn-load { 
-            background: #eeeeee !important; 
-            color: #000000 !important; 
-            border: none !important;
-            width: 70px !important;
-            height: 40px !important;
-            border-radius: 8px !important;
-            font-size: 11px !important;
-            font-weight: 700 !important;
-        }
-        
-        .btn-del { 
-            background: #ffffff !important; 
-            color: var(--muted-red) !important; 
-            border: 1.5px solid var(--muted-red) !important; 
-            flex: 1 !important;
-            height: 40px !important;
-            border-radius: 8px !important;
-            font-size: 11px !important;
-            font-weight: 700 !important;
-        }
+        .history-info { font-size: 14px; margin-bottom: 12px; display: block; font-weight: 600; }
+        .history-actions { display: flex; gap: 8px; }
+
+        .btn-load { background: #eeeeee; border: none; width: 70px; height: 40px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .btn-del { background: #ffffff; color: var(--muted-red); border: 1.5px solid var(--muted-red); flex: 1; height: 40px; border-radius: 8px; font-weight: 700; font-size: 11px; }
 
         .main-content {
             flex: 1;
@@ -152,6 +118,7 @@
             gap: 8px;
             padding: 10px;
             user-select: none;
+            touch-action: none;
         }
 
         .box {
@@ -161,7 +128,7 @@
             border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
-            transition: background-color 0.1s;
+            /* transition 제거: 펜슬 입력 시 반응 속도를 높이기 위함 */
         }
 
         .box.filled { border-color: transparent; }
@@ -179,7 +146,6 @@
             <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
             <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
         </div>
-
         <div class="history-title">SAVED RECORDS</div>
         <div id="historyList" class="history-list"></div>
     </div>
@@ -194,14 +160,13 @@
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [] };
         let isDragging = false;
+        let lastProcessedIdx = -1; // 중복 처리 방지용
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
-        const todayStr = new Date().toISOString().split('T')[0];
-        dateInput.value = todayStr;
-
-        dateInput.addEventListener('change', () => { if (currentData.id) render(); });
+        dateInput.value = new Date().toISOString().split('T')[0];
+        dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
 
         function createNew() {
             const total = parseInt(document.getElementById('totalInput').value);
@@ -215,18 +180,31 @@
                 total: total,
                 state: Array(total).fill(null)
             };
-            render();
+            
+            initGridDOM(); // DOM을 처음에 한 번만 생성
+            updateGridUI(); // 상태 업데이트
             document.getElementById('saveBtn').style.display = 'block';
         }
 
-        function render() {
+        // 그리드 칸(DOM)을 처음에 한 번만 만드는 함수
+        function initGridDOM() {
             grid.innerHTML = '';
-            const selectedDate = dateInput.value;
-
-            currentData.state.forEach((dateVal, idx) => {
+            for (let i = 0; i < currentData.total; i++) {
                 const box = document.createElement('div');
                 box.className = 'box';
-                box.dataset.index = idx;
+                box.dataset.index = i;
+                grid.appendChild(box);
+            }
+        }
+
+        // 상태 데이터에 맞춰 색상만 업데이트하는 함수 (깜빡임 방지 핵심)
+        function updateGridUI() {
+            const selectedDate = dateInput.value;
+            const boxes = grid.querySelectorAll('.box');
+            
+            currentData.state.forEach((dateVal, idx) => {
+                const box = boxes[idx];
+                if (!box) return;
 
                 if (dateVal) {
                     box.classList.add('filled');
@@ -237,8 +215,10 @@
                         const opacity = Math.max(0.15, 0.6 - (diffDays * 0.1));
                         box.style.backgroundColor = `rgba(45, 90, 39, ${opacity})`;
                     }
+                } else {
+                    box.classList.remove('filled');
+                    box.style.backgroundColor = '#ffffff';
                 }
-                grid.appendChild(box);
             });
             updateStatus();
         }
@@ -249,58 +229,62 @@
             document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
         }
 
-        function handlePointer(e) {
+        function getTargetIdx(e) {
             const target = document.elementFromPoint(e.clientX, e.clientY);
             if (!target || !target.classList.contains('box')) return null;
             return parseInt(target.dataset.index);
         }
 
         grid.addEventListener('pointerdown', (e) => {
-            const idx = handlePointer(e);
+            const idx = getTargetIdx(e);
             if (idx !== null) {
                 isDragging = true;
-                processFill(idx);
+                lastProcessedIdx = idx;
+                processFill(idx, false);
                 grid.setPointerCapture(e.pointerId);
             }
         });
 
         grid.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
-            const idx = handlePointer(e);
-            if (idx !== null) processFill(idx, true); // 드래그 중임을 표시
+            const idx = getTargetIdx(e);
+            // 펜슬의 미세한 움직임으로 같은 칸에서 이벤트가 중복 발생하는 것 방지
+            if (idx !== null && idx !== lastProcessedIdx) {
+                lastProcessedIdx = idx;
+                processFill(idx, true);
+            }
         });
 
-        grid.addEventListener('pointerup', () => { isDragging = false; });
+        grid.addEventListener('pointerup', () => { 
+            isDragging = false; 
+            lastProcessedIdx = -1;
+        });
 
-        // 수정한 로직 부분
-        function processFill(targetIdx, dragging = false) {
+        function processFill(targetIdx, dragging) {
             const currentSelectedDate = dateInput.value;
             const newState = [...currentData.state];
             
-            // 현재 마지막으로 채워진 인덱스 찾기
             let lastFilledIdx = -1;
             for(let i = 0; i < newState.length; i++) {
                 if(newState[i] !== null) lastFilledIdx = i;
             }
 
             if (targetIdx > lastFilledIdx) {
-                // 클릭한 곳이 마지막 채워진 곳보다 뒤라면: 클릭한 곳까지 채움
                 for (let i = 0; i <= targetIdx; i++) {
                     if (newState[i] === null) newState[i] = currentSelectedDate;
                 }
             } else if (targetIdx === lastFilledIdx && !dragging) {
-                // 클릭한 곳이 정확히 마지막 채워진 곳이고 드래그가 아닐 때: 해당 칸 비움 (토글)
                 newState[targetIdx] = null;
             } else {
-                // 클릭한 곳이 마지막보다 앞이라면: 클릭한 곳 이후를 모두 비움
                 for (let i = newState.length - 1; i > targetIdx; i--) {
                     newState[i] = null;
                 }
             }
             currentData.state = newState;
-            render();
+            updateGridUI(); // 전체 리렌더링 대신 UI 업데이트만 호출
         }
 
+        // 저장/로드 로직 유지
         function saveData() {
             let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const idx = logs.findIndex(l => l.id === currentData.id);
@@ -337,7 +321,8 @@
                 document.getElementById('nameInput').value = currentData.name;
                 document.getElementById('totalInput').value = currentData.total;
                 dateInput.value = currentData.date;
-                render();
+                initGridDOM(); // 불러올 때 DOM 생성
+                updateGridUI(); // 색상 적용
                 document.getElementById('saveBtn').style.display = 'block';
             }
         }
