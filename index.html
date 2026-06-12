@@ -220,6 +220,22 @@
 
         .box.filled { border-color: transparent; }
 
+        /* 동기부여 문구 스타일 추가 */
+        .motivation-text {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            color: #000000;
+            font-size: 24px;
+            font-weight: 800;
+            z-index: 100;
+        }
+        
+        /* 텍스트가 비어있을 때는 아예 화면에서 사라지게 처리 */
+        .motivation-text:empty {
+            display: none;
+        }
+
         ::-webkit-scrollbar { width: 0; }
     </style>
 </head>
@@ -255,6 +271,13 @@
             <div id="trackerGrid" class="tracker-grid"></div>
         </div>
     </div>
+
+    <!-- 
+      ▼▼▼ 동기부여 문구 입력란 ▼▼▼ 
+      아래 <div>와 </div> 사이에 원하는 문구를 입력하면 우측 하단에 나타납니다.
+      아무것도 적지 않고 <div class="motivation-text"></div> 형태로 붙여두면 화면에 나타나지 않습니다.
+    -->
+    <div class="motivation-text">오늘도 화이팅! 할 수 있다!</div>
 
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
