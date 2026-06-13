@@ -365,7 +365,7 @@
 
         .tracker-grid {
             display: grid;
-            grid-template-columns: repeat(20, 1fr);
+            grid-template-columns: repeat(10, 1fr);
             gap: 8px;
             padding: 10px;
             user-select: none;
@@ -373,8 +373,8 @@
         }
 
         .box {
-            width: 28px;
-            height: 28px;
+            width: 56px;
+            height: 42px;
             border: 1px solid var(--box-border);
             border-radius: 5px;
             background: #ffffff;
@@ -383,7 +383,7 @@
 
         .box.filled { border-color: transparent; }
 
-        /* ── hyun 이미지 + 말풍선 디데이 ── */
+        /* ── hyun 이미지 + 디데이 텍스트 ── */
         .hyun-container {
             position: fixed;
             bottom: 0;
@@ -395,14 +395,10 @@
             pointer-events: none;
         }
 
-        .hyun-bubble {
+        #ddayDisplay {
             position: absolute;
-            top: 14px;
-            right: 160px;
-            background: #ffffff;
-            border: 2.5px solid #000000;
-            border-radius: 50px;
-            padding: 10px 22px;
+            top: 28px;
+            right: 210px;
             font-size: 24px;
             font-weight: 800;
             color: #000000;
@@ -410,30 +406,8 @@
             display: none;
         }
 
-        /* 말풍선 꼬리 (오른쪽 방향) */
-        .hyun-bubble::after {
-            content: '';
-            position: absolute;
-            right: -20px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 10px solid transparent;
-            border-left-color: #000000;
-        }
-
-        .hyun-bubble::before {
-            content: '';
-            position: absolute;
-            right: -15px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 8px solid transparent;
-            border-left-color: #ffffff;
-            z-index: 1;
-        }
-
         .hyun-img {
-            width: 180px;
+            width: 270px;
             display: block;
         }
 
@@ -498,7 +472,7 @@
 
     <!-- hyun 이미지 + 디데이 말풍선 (트래커 페이지 고정) -->
     <div class="hyun-container" id="hyunContainer">
-        <div class="hyun-bubble" id="ddayDisplay"></div>
+        <div id="ddayDisplay"></div>
         <img class="hyun-img" src="hyun.PNG" alt="">
     </div>
 
@@ -749,10 +723,6 @@
             }, msUntilMidnight);
         }
 
-        // 저장된 디데이 날짜 복원
-        const savedDday = localStorage.getItem('dday_date');
-        if (savedDday) document.getElementById('ddayInput').value = savedDday;
-
         updateDdayDisplay();
         scheduleMidnightUpdate();
 
@@ -786,12 +756,6 @@
                 pagesWrapper.classList.add('show-records');
             }
         }, { passive: true });
-
-        // hyun 컨테이너: 기록 페이지 스와이프 시 숨기기
-        pagesWrapper.addEventListener('transitionend', () => {
-            const isRecords = pagesWrapper.classList.contains('show-records');
-            document.getElementById('hyunContainer').style.display = isRecords ? 'none' : 'flex';
-        });
 
         renderHistory();
     </script>
