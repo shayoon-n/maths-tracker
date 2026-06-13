@@ -38,14 +38,103 @@
             --sidebar-width: 280px;
         }
 
-        body {
+        html, body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            display: flex;
+            width: 100vw;
             height: 100vh;
             background-color: var(--bg-main);
             color: #000000;
             overflow: hidden;
             touch-action: none;
+        }
+
+        /* 슬라이드 컨테이너 */
+        .slider-container {
+            display: flex;
+            width: 200vw;
+            height: 100vh;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateX(-100vw); /* 기본 화면은 오른쪽(메인 페이지) */
+        }
+
+        .page {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        /* --------------------------------- */
+        /* 왼쪽 페이지: SAVED RECORDS 슬라이드  */
+        /* --------------------------------- */
+        .records-page {
+            background: var(--bg-main);
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .records-header {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-grey);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .history-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px; /* 하단 화살표 버튼 공간 확보 */
+            -ms-overflow-style: none; 
+            scrollbar-width: none;
+        }
+        
+        .history-grid-container::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .history-item {
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        
+        .history-info-title { 
+            display: flex; justify-content: space-between; align-items: flex-start; 
+            font-size: 14px; font-weight: 600; line-height: 1.4; 
+            word-break: keep-all; 
+        }
+        .history-info-sub { 
+            font-size: 13px; line-height: 1.4; font-weight: 600; color: var(--text-grey); 
+        }
+        .history-actions { 
+            display: flex; gap: 8px; align-items: center; margin-top: auto; 
+        }
+
+        .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; padding: 0 12px !important; height: 36px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; cursor: pointer; }
+        .btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 36px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; cursor: pointer; }
+
+
+        /* --------------------------------- */
+        /* 오른쪽 페이지: 기존 메인 트래커 화면  */
+        /* --------------------------------- */
+        .main-page {
+            background: var(--bg-main);
         }
 
         .sidebar {
@@ -55,7 +144,7 @@
             border-right: 1px solid #eeeeee;
             display: flex;
             flex-direction: column;
-            padding: 40px 20px;
+            padding: 40px 20px 90px; /* 화살표 버튼과 겹치지 않게 여백 추가 */
             overflow-y: auto;
         }
 
@@ -135,22 +224,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .history-title { 
-            font-size: 11px; font-weight: 800; color: var(--text-grey); 
-            margin: 30px 0 20px; text-transform: uppercase; letter-spacing: 1.2px;
-        }
-
-        .history-list { display: flex; flex-direction: column; gap: 20px; }
-        .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
-        
-        .history-info-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; line-height: 1.5; }
-        .history-info-sub { font-size: 14px; margin-bottom: 12px; line-height: 1.5; font-weight: 600; }
-        
-        .history-actions { display: flex; gap: 8px; align-items: center; }
-
-        .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; width: 70px !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
-        .btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
-
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -219,7 +292,7 @@
         .box.filled { border-color: transparent; }
 
         .motivation-text {
-            position: fixed;
+            position: absolute;
             bottom: 40px;
             right: 40px;
             color: #000000;
@@ -232,62 +305,110 @@
             display: none;
         }
 
-        ::-webkit-scrollbar { width: 0; }
+
+        /* --------------------------------- */
+        /* 네비게이션 버튼 (화살표) 스타일       */
+        /* --------------------------------- */
+        .nav-btn {
+            position: absolute;
+            bottom: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid var(--border-color);
+            font-size: 22px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .nav-btn:hover { background: #f7f7f7; }
+        .nav-btn:active { transform: scale(0.95); }
+        
+        .nav-right { right: 30px; } /* 기록 페이지 우측 하단 */
+        .nav-left { left: 30px; }   /* 메인 페이지 좌측 하단 (사이드바 위치) */
+
+        ::-webkit-scrollbar { width: 0; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="input-group">
-            <input type="date" id="dateInput">
-            <input type="text" id="nameInput" placeholder="항목 이름">
-            <input type="number" id="totalInput" placeholder="총 문제 수">
-            <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
-            <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
-            
-            <div id="colorPalette" class="color-palette" style="display: none;">
-                <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
-                <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
-                <div class="color-circle" style="background: rgba(45, 90, 39, 0.6);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.6)')"></div>
-                <div class="color-circle" style="background: rgba(45, 90, 39, 0.4);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.4)')"></div>
-                <div class="color-circle" style="background: rgba(45, 90, 39, 0.2);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.2)')"></div>
-            </div>
-        </div>
-        <div class="history-title">SAVED RECORDS</div>
-        <div id="historyList" class="history-list"></div>
-    </div>
+    <div class="slider-container" id="slider">
 
-    <div class="main-content">
-        <div class="tracker-wrapper">
-            <div class="status-header">
-                <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
-                <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
+        <!-- [왼쪽 페이지] 저장된 기록 -->
+        <div class="page records-page">
+            <div class="records-header">SAVED RECORDS</div>
+            <div class="history-grid-container">
+                <div id="historyGrid" class="history-grid"></div>
             </div>
-            <div id="trackerGrid" class="tracker-grid"></div>
+            <button class="nav-btn nav-right" onclick="goToMain()">→</button>
         </div>
-    </div>
 
-    <!-- 
-      ▼▼▼ 동기부여 문구 입력란 ▼▼▼ 
-      아래 <div>와 </div> 사이에 원하는 문구를 입력하면 우측 하단에 나타납니다.
-      아무것도 적지 않고 <div class="motivation-text"></div> 형태로 붙여두면 화면에 나타나지 않습니다.
-    -->
-    <div class="motivation-text">미적을 존나게 해</div>
+        <!-- [오른쪽 페이지] 기존 메인 트래커 화면 -->
+        <div class="page main-page">
+            <button class="nav-btn nav-left" onclick="goToRecords()">←</button>
+
+            <div class="sidebar">
+                <div class="input-group">
+                    <input type="date" id="dateInput">
+                    <input type="text" id="nameInput" placeholder="항목 이름">
+                    <input type="number" id="totalInput" placeholder="총 문제 수">
+                    <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
+                    <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
+                    
+                    <div id="colorPalette" class="color-palette" style="display: none;">
+                        <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
+                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
+                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.6);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.6)')"></div>
+                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.4);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.4)')"></div>
+                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.2);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.2)')"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="tracker-wrapper">
+                    <div class="status-header">
+                        <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+                        <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
+                    </div>
+                    <div id="trackerGrid" class="tracker-grid"></div>
+                </div>
+            </div>
+
+            <!-- 동기부여 문구 -->
+            <div class="motivation-text">미적을 존나게 해</div>
+        </div>
+
+    </div>
 
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
         let isDragging = false;
         let lastProcessedIdx = -1;
-        let activeColor = 'rgba(45, 90, 39, 1)'; // 기본 색상 (가장 어두운 진초록)
+        let activeColor = 'rgba(45, 90, 39, 1)';
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
         dateInput.value = new Date().toISOString().split('T')[0];
-        
         dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
 
-        // 팔레트 색상 선택 함수
+        /* 페이지 슬라이드 기능 */
+        function goToRecords() {
+            document.getElementById('slider').style.transform = 'translateX(0)';
+        }
+
+        function goToMain() {
+            document.getElementById('slider').style.transform = 'translateX(-100vw)';
+        }
+
         function selectColor(element, color) {
             document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
             element.classList.add('selected');
@@ -436,7 +557,7 @@
         }
 
         function renderHistory() {
-            const list = document.getElementById('historyList');
+            const list = document.getElementById('historyGrid');
             const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             list.innerHTML = '';
             logs.slice().reverse().forEach(log => {
@@ -447,7 +568,7 @@
                 item.className = 'history-item';
                 item.innerHTML = `
                     <div class="history-info-title">
-                        <strong>${log.name}</strong>
+                        <span style="flex:1; padding-right:8px; word-break:break-all;">${log.name}</span>
                         ${isDoneHtml}
                     </div>
                     <div class="history-info-sub">${log.date} (${solved}/${log.total})</div>
@@ -483,6 +604,8 @@
                 document.getElementById('colorPalette').style.display = 'flex';
                 document.getElementById('doneBtn').style.display = 'flex';
                 updateDoneBtnUI();
+
+                goToMain(); // ★ 로드 후 바로 메인화면(우측)으로 슥 이동!
             }
         }
 
@@ -514,4 +637,3 @@
     </script>
 </body>
 </html>
-
