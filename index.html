@@ -178,6 +178,7 @@
             overflow: hidden;
         }
 
+        /* ── 사이드바 ── */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -190,6 +191,20 @@
             height: 100vh;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.35s ease,
+                        padding 0.35s ease;
+        }
+
+        /* 집중모드: 사이드바 숨기기 */
+        body.focus-mode .sidebar {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            opacity: 0;
+            overflow: hidden;
+            border-right: none;
         }
 
         .input-group {
@@ -311,6 +326,7 @@
             white-space: nowrap;
         }
 
+        /* ── 메인 콘텐츠 ── */
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -321,12 +337,13 @@
             height: 100vh;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
+            transition: padding 0.35s ease;
         }
 
         .tracker-wrapper {
             display: flex;
             flex-direction: column;
-            width: max-content;
+            align-items: center;
             position: relative;
         }
 
@@ -363,6 +380,7 @@
             color: #569126;
         }
 
+        /* ── 트래커 그리드: 반응형 ── */
         .tracker-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
@@ -370,15 +388,16 @@
             padding: 10px;
             user-select: none;
             touch-action: none;
+            width: 100%;
         }
 
         .box {
-            width: 56px;
-            height: 42px;
+            aspect-ratio: 4 / 3;
             border: 1px solid var(--box-border);
             border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
+            width: 100%;
         }
 
         .box.filled { border-color: transparent; }
@@ -411,6 +430,49 @@
             display: block;
         }
 
+        /* ── 집중모드 스위치 ── */
+        .focus-switch-wrap {
+            position: fixed;
+            right: 114px; /* hyun-container right(40) + img(270)/2 - switch(44)/2 ≈ 중앙 */
+            bottom: 282px;
+            z-index: 200;
+            pointer-events: auto;
+        }
+
+        .focus-switch {
+            width: 51px;
+            height: 31px;
+            background: #cccccc;
+            border-radius: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.25s ease;
+            border: none;
+            outline: none;
+            display: block;
+        }
+
+        .focus-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 27px;
+            height: 27px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: transform 0.25s ease;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        }
+
+        .focus-switch.on {
+            background: #34c759;
+        }
+
+        .focus-switch.on::after {
+            transform: translateX(20px);
+        }
+
         ::-webkit-scrollbar { width: 0; }
     </style>
 </head>
@@ -430,7 +492,7 @@
 
         <!-- ── 오른쪽: 트래커 페이지 ── -->
         <div class="page-tracker">
-            <div class="sidebar">
+            <div class="sidebar" id="sidebar">
                 <div class="input-group">
                     <input type="date" id="dateInput">
                     <input type="text" id="nameInput" placeholder="항목 이름">
@@ -457,8 +519,8 @@
                 </div>
             </div>
 
-            <div class="main-content">
-                <div class="tracker-wrapper">
+            <div class="main-content" id="mainContent">
+                <div class="tracker-wrapper" id="trackerWrapper">
                     <div class="status-header">
                         <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
                         <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
@@ -470,10 +532,15 @@
 
     </div>
 
-    <!-- hyun 이미지 + 디데이 말풍선 (트래커 페이지 고정) -->
+    <!-- hyun 이미지 + 디데이 텍스트 -->
     <div class="hyun-container" id="hyunContainer">
         <div id="ddayDisplay"></div>
         <img class="hyun-img" src="hyun.PNG" alt="">
+    </div>
+
+    <!-- 집중모드 스위치 -->
+    <div class="focus-switch-wrap">
+        <button class="focus-switch" id="focusSwitch" onclick="toggleFocusMode()"></button>
     </div>
 
     <script>
@@ -481,6 +548,8 @@
         let isDragging = false;
         let lastProcessedIdx = -1;
         let activeColor = 'rgba(45, 90, 39, 1)';
+        let focusMode = false;
+        let swipeDisabled = false;
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
@@ -686,6 +755,21 @@
             else btn.classList.remove('is-done');
         }
 
+        // ── 집중 모드 ──
+        function toggleFocusMode() {
+            focusMode = !focusMode;
+            const sw = document.getElementById('focusSwitch');
+            if (focusMode) {
+                document.body.classList.add('focus-mode');
+                sw.classList.add('on');
+                swipeDisabled = true;
+            } else {
+                document.body.classList.remove('focus-mode');
+                sw.classList.remove('on');
+                swipeDisabled = false;
+            }
+        }
+
         // ── 디데이 ──
         function calcDday(targetDateStr) {
             const now = new Date();
@@ -733,6 +817,7 @@
 
         document.addEventListener('pointerdown', (e) => {
             if (e.target.closest('#trackerGrid')) return;
+            if (e.target.closest('.focus-switch-wrap')) return;
             swipeStartX = e.clientX;
             swipeStartY = e.clientY;
             swipeActive = true;
@@ -741,7 +826,9 @@
         document.addEventListener('pointerup', (e) => {
             if (!swipeActive) return;
             swipeActive = false;
+            if (swipeDisabled) return;
             if (e.target.closest('#trackerGrid')) return;
+            if (e.target.closest('.focus-switch-wrap')) return;
 
             const dx = e.clientX - swipeStartX;
             const dy = e.clientY - swipeStartY;
