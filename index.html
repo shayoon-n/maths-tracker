@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="︎︎Maths Tracker by Chaeeun Ahn">
+    <meta name="apple-mobile-web-app-title" content="Maths Tracker by Chaeeun Ahn">
     <title>Maths Tracker by Chaeeun Ahn</title>
     <style>
         * {
@@ -35,85 +35,39 @@
             --text-grey: #999999;
             --muted-green: #2d5a27;
             --muted-red: #d55454;
+            --sidebar-width: 280px;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            height: 100vh;
             background-color: var(--bg-main);
             color: #000000;
-            overflow: hidden; /* 전체 바디 스크롤 방지 */
+            overflow: hidden;
             touch-action: none;
         }
 
-        /* ▼▼▼ 스와이프를 위한 앱 컨테이너 설정 ▼▼▼ */
-        .app-container {
-            display: flex;
-            width: 100vw;
-            height: 100vh;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory; /* 가로 스크롤 스냅 */
-            scroll-behavior: smooth;
-            -ms-overflow-style: none; /* IE, Edge 스크롤바 숨김 */
-            scrollbar-width: none; /* Firefox 스크롤바 숨김 */
-        }
-        .app-container::-webkit-scrollbar {
-            display: none; /* Chrome, Safari 스크롤바 숨김 */
-        }
-
-        /* 각 페이지(슬라이드) 설정 */
-        .page {
-            flex: 0 0 100vw; /* 정확히 화면 너비 100% 차지 */
-            width: 100vw;
-            height: 100vh;
-            overflow-y: auto; /* 세로 스크롤 허용 */
-            scroll-snap-align: start; /* 페이지 단위로 딱 맞게 스크롤 */
-            position: relative;
-            padding: 40px 20px 100px 20px; /* 여백 유지 */
-        }
-
-        /* 왼쪽 페이지: 기록 보관함 */
-        .page-history { background: var(--bg-sidebar); }
-
-        /* 오른쪽 페이지: 메인 트래커 */
-        .page-tracker { 
-            background: var(--bg-main); 
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid #eeeeee;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            padding: 40px 20px;
+            overflow-y: auto;
         }
 
-        /* ▼▼▼ 네비게이션 버튼 ▼▼▼ */
-        .nav-btn {
-            background: #000000;
-            color: #ffffff;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-            width: fit-content;
-            align-self: center; /* 가운데 정렬 */
-            z-index: 10;
-        }
-
-        /* 입력 폼 설정 (트래커 페이지 상단) */
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            max-width: 350px; /* 너무 넓어지지 않게 고정 */
             margin-bottom: 40px;
         }
 
-        .input-group input {
+        .sidebar input {
             width: 100% !important;
             height: 50px;
             padding: 0 15px;
@@ -135,9 +89,10 @@
             -webkit-appearance: none;
             appearance: none;
         }
+
         input::placeholder { color: #aaaaaa; }
 
-        .main-btn {
+        .sidebar button.main-btn {
             width: 100% !important;
             height: 50px;
             border-radius: 10px;
@@ -153,6 +108,7 @@
             align-items: center;
             justify-content: center;
         }
+
         .btn-create { margin-bottom: 5px; }
 
         .color-palette {
@@ -172,39 +128,47 @@
             transition: transform 0.1s ease, border-color 0.1s ease;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+
         .color-circle.selected {
             border-color: #000000;
             transform: scale(1.15);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* 기록 보관함 리스트 설정 */
         .history-title { 
             font-size: 11px; font-weight: 800; color: var(--text-grey); 
-            margin: 10px 0 20px; text-transform: uppercase; letter-spacing: 1.2px;
-            text-align: center;
+            margin: 30px 0 20px; text-transform: uppercase; letter-spacing: 1.2px;
         }
-        .history-list { display: flex; flex-direction: column; gap: 20px; max-width: 400px; margin: 0 auto; }
-        .history-item { padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
+
+        .history-list { display: flex; flex-direction: column; gap: 20px; }
+        .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
         
-        .history-info-title { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; line-height: 1.5; color: #000;}
-        .history-info-sub { font-size: 13px; margin-bottom: 12px; line-height: 1.5; font-weight: 600; color: #666; }
+        .history-info-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; line-height: 1.5; }
+        .history-info-sub { font-size: 14px; margin-bottom: 12px; line-height: 1.5; font-weight: 600; }
+        
         .history-actions { display: flex; gap: 8px; align-items: center; }
 
-        .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; width: 80px !important; height: 40px !important; border-radius: 8px !important; font-size: 12px !important; font-weight: 800 !important; cursor: pointer; }
-        .btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 40px !important; border-radius: 8px !important; font-size: 12px !important; font-weight: 800 !important; cursor: pointer; }
+        .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; width: 70px !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
+        .btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
 
-        /* 트래커 영역 설정 */
+        .main-content {
+            flex: 1;
+            padding: 60px 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .tracker-wrapper {
             display: flex;
             flex-direction: column;
             width: max-content; 
             position: relative;
-            max-width: 100%;
         }
 
         .status-header { 
-            margin-bottom: 30px; 
+            margin-bottom: 40px; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -215,7 +179,7 @@
 
         .btn-done {
             position: absolute;
-            right: 0px; 
+            right: 10px; 
             background: #ffffff;
             border: 1.5px solid #e0e0e0;
             color: #999999;
@@ -243,13 +207,6 @@
             touch-action: none;
         }
 
-        /* 모바일에서는 그리드를 10칸씩 두줄 등 유동적으로 */
-        @media (max-width: 768px) {
-            .tracker-grid { grid-template-columns: repeat(10, 1fr); }
-            .tracker-wrapper { width: 100%; align-items: center; }
-            .box { width: 30px; height: 30px; }
-        }
-
         .box {
             width: 28px;
             height: 28px;
@@ -261,17 +218,6 @@
 
         .box.filled { border-color: transparent; }
 
-        /* 현우진 사진 & 문구 스타일 */
-        .hyun-image {
-            position: fixed;
-            bottom: 85px; 
-            right: 40px;
-            width: 270px; 
-            height: auto;
-            z-index: 99;
-            pointer-events: none; 
-        }
-
         .motivation-text {
             position: fixed;
             bottom: 40px;
@@ -282,102 +228,72 @@
             z-index: 100;
         }
         
-        .motivation-text:empty { display: none; }
-
-        @media (max-width: 768px) {
-            .hyun-image { width: 180px; bottom: 75px; right: 20px; }
-            .motivation-text { font-size: 18px; bottom: 30px; right: 20px; }
+        .motivation-text:empty {
+            display: none;
         }
+
+        ::-webkit-scrollbar { width: 0; }
     </style>
 </head>
 <body>
 
-    <!-- 가로로 넘겨지는 앱 컨테이너 -->
-    <div class="app-container" id="appContainer">
-        
-        <!-- ================= 왼쪽 슬라이드: 기록 보관함 ================= -->
-        <div class="page page-history" id="pageHistory">
-            <!-- 트래커 화면으로 돌아가는 버튼 -->
-            <button class="nav-btn" onclick="scrollToTracker()">Main Tracker →</button>
+    <div class="sidebar">
+        <div class="input-group">
+            <input type="date" id="dateInput">
+            <input type="text" id="nameInput" placeholder="항목 이름">
+            <input type="number" id="totalInput" placeholder="총 문제 수">
+            <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
+            <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
             
-            <div class="history-title">📂 SAVED RECORDS</div>
-            <div id="historyList" class="history-list"></div>
-        </div>
-
-        <!-- ================= 오른쪽 슬라이드: 메인 트래커 ================= -->
-        <div class="page page-tracker" id="pageTracker">
-            <!-- 기록 보관함으로 넘어가는 버튼 -->
-            <button class="nav-btn" onclick="scrollToHistory()">← Saved Records</button>
-
-            <!-- 기존 사이드바에 있던 입력폼들을 상단 중앙에 배치 -->
-            <div class="input-group">
-                <input type="date" id="dateInput">
-                <input type="text" id="nameInput" placeholder="항목 이름 (예: 수능완성 실모 1회)">
-                <input type="number" id="totalInput" placeholder="총 문제 수">
-                <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
-                <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
-                
-                <div id="colorPalette" class="color-palette" style="display: none;">
-                    <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
-                    <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
-                    <div class="color-circle" style="background: rgba(45, 90, 39, 0.6);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.6)')"></div>
-                    <div class="color-circle" style="background: rgba(45, 90, 39, 0.4);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.4)')"></div>
-                    <div class="color-circle" style="background: rgba(45, 90, 39, 0.2);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.2)')"></div>
-                </div>
-            </div>
-
-            <!-- 네모칸 찍는 영역 -->
-            <div class="tracker-wrapper">
-                <div class="status-header">
-                    <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
-                    <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
-                </div>
-                <div id="trackerGrid" class="tracker-grid"></div>
+            <div id="colorPalette" class="color-palette" style="display: none;">
+                <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.6);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.6)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.4);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.4)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.2);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.2)')"></div>
             </div>
         </div>
-
+        <div class="history-title">SAVED RECORDS</div>
+        <div id="historyList" class="history-list"></div>
     </div>
 
-    <!-- 고정된 현우진 사진 & 문구 -->
-    <img src="hyun.PNG" alt="현우진" class="hyun-image">
-    <div class="motivation-text">존나게 해 제발 채은아.. 인생이 달렸어</div>
+    <div class="main-content">
+        <div class="tracker-wrapper">
+            <div class="status-header">
+                <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+                <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
+            </div>
+            <div id="trackerGrid" class="tracker-grid"></div>
+        </div>
+    </div>
+
+    <!-- 
+      ▼▼▼ 동기부여 문구 입력란 ▼▼▼ 
+      아래 <div>와 </div> 사이에 원하는 문구를 입력하면 우측 하단에 나타납니다.
+      아무것도 적지 않고 <div class="motivation-text"></div> 형태로 붙여두면 화면에 나타나지 않습니다.
+    -->
+    <div class="motivation-text">미적을 존나게 해</div>
 
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
         let isDragging = false;
         let lastProcessedIdx = -1;
-        let activeColor = 'rgba(45, 90, 39, 1)'; 
+        let activeColor = 'rgba(45, 90, 39, 1)'; // 기본 색상 (가장 어두운 진초록)
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
         
         dateInput.value = new Date().toISOString().split('T')[0];
+        
         dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
 
-        // 페이지 넘김(스와이프) 제어 스크립트
-        function scrollToTracker() {
-            document.getElementById('pageTracker').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function scrollToHistory() {
-            document.getElementById('pageHistory').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // 웹사이트 로딩 시 '메인 트래커' 페이지가 보이도록 자동 이동
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('pageTracker').scrollIntoView({ behavior: 'auto' });
-            }, 50);
-        });
-
-        // 색상 선택
+        // 팔레트 색상 선택 함수
         function selectColor(element, color) {
             document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
             element.classList.add('selected');
             activeColor = color;
         }
 
-        // 새로 만들기
         function createNew() {
             const total = parseInt(document.getElementById('totalInput').value);
             const name = document.getElementById('nameInput').value;
@@ -441,7 +357,6 @@
             return parseInt(target.dataset.index);
         }
 
-        // 네모칸 그리기 기능 (페이지 스와이프와 충돌하지 않음)
         grid.addEventListener('pointerdown', (e) => {
             const idx = getTargetIdx(e);
             if (idx !== null) {
@@ -492,7 +407,6 @@
             updateGridUI();
         }
 
-        // 저장
         function saveData() {
             currentData.name = document.getElementById('nameInput').value || '무제';
             
@@ -521,7 +435,6 @@
             renderHistory();
         }
 
-        // 보관함 렌더링
         function renderHistory() {
             const list = document.getElementById('historyList');
             const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
@@ -547,7 +460,6 @@
             });
         }
 
-        // 기록 불러오기
         function loadData(id) {
             const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
             const target = logs.find(l => l.id === id);
@@ -571,9 +483,6 @@
                 document.getElementById('colorPalette').style.display = 'flex';
                 document.getElementById('doneBtn').style.display = 'flex';
                 updateDoneBtnUI();
-
-                // 💡 불러오기를 누르면 자동으로 오른쪽 메인 트래커 페이지로 스와이프됩니다!
-                scrollToTracker();
             }
         }
 
@@ -605,3 +514,4 @@
     </script>
 </body>
 </html>
+
