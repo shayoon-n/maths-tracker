@@ -377,7 +377,7 @@
                     <input type="text" id="nameInput" placeholder="항목 이름">
                     <input type="number" id="totalInput" placeholder="총 문제 수">
                     <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
-                    <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
+                    <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveDataWithAlert()">SAVE PROGRESS</button>
 
                     <div id="colorPalette" class="color-palette" style="display: none;">
                         <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
@@ -538,6 +538,10 @@
             else logs.push(JSON.parse(JSON.stringify(currentData)));
             localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
             renderHistory();
+        }
+
+        function saveDataWithAlert() {
+            saveData();
             alert('저장되었습니다.');
         }
 
