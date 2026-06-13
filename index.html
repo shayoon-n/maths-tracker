@@ -1,344 +1,517 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Maths Tracker by Chaeeun Ahn">
-<title>Maths Tracker by Chaeeun Ahn</title>
-<style>
-* {
-    box-sizing: border-box !important;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Maths Tracker by Chaeeun Ahn">
+    <title>Maths Tracker by Chaeeun Ahn</title>
+    <style>
+        * {
+            box-sizing: border-box !important;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
 
-input {
-    -webkit-touch-callout: default !important;
-    -webkit-user-select: auto !important;
-    -moz-user-select: auto !important;
-    -ms-user-select: auto !important;
-    user-select: auto !important;
-}
+        input {
+            -webkit-touch-callout: default !important;
+            -webkit-user-select: auto !important;
+            -moz-user-select: auto !important;
+            -ms-user-select: auto !important;
+            user-select: auto !important;
+        }
 
-:root {
-    --bg-main: #ffffff;
-    --bg-sidebar: #f7f7f7;
-    --border-color: #e0e0e0;
-    --box-border: #cccccc;
-    --text-grey: #999999;
-    --muted-green: #2d5a27;
-    --muted-red: #d55454;
-    --sidebar-width: 280px;
-}
+        :root {
+            --bg-main: #ffffff;
+            --bg-sidebar: #f7f7f7;
+            --border-color: #e0e0e0;
+            --box-border: #cccccc;
+            --text-grey: #999999;
+            --muted-green: #2d5a27;
+            --muted-red: #d55454;
+            --sidebar-width: 280px;
+        }
 
-/* 🔥 전체 화면 고정 및 출렁임 방지 */
-html, body {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    background-color: var(--bg-main);
-    color: #000000;
-    overflow: hidden;
-    
-    /* 브라우저 화면 위아래 출렁임 원천 차단 */
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    overscroll-behavior: none;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-main);
+            color: #000000;
+            overflow: hidden;
+            touch-action: none;
+        }
 
-/* 슬라이드 컨테이너 */
-.slider-container {
-    display: flex;
-    width: 200vw;
-    height: 100vh;
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    transform: translateX(-100vw); /* 기본 화면은 오른쪽(메인 페이지) */
-}
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid #eeeeee;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
 
-.page {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-    display: flex;
-    flex-shrink: 0;
-}
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
 
-/* --------------------------------- */
-/* 왼쪽 페이지: SAVED RECORDS 슬라이드  */
-/* --------------------------------- */
-.records-page {
-    background: var(--bg-main);
-    display: flex;
-    flex-direction: column;
-    padding: 40px;
-    box-sizing: border-box;
-}
+        .sidebar input {
+            width: 100% !important;
+            height: 50px;
+            padding: 0 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0 !important;
+        }
 
-.records-header {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--text-grey);
-    margin-bottom: 30px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-}
+        input[type="date"] {
+            color: var(--muted-green) !important;
+            font-weight: 700;
+            -webkit-appearance: none;
+            appearance: none;
+        }
 
-/* 🔥 기록 창 내부 스크롤 허용 및 당겨짐 방지 */
-.history-grid-container {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 80px;
-    -ms-overflow-style: none; 
-    scrollbar-width: none;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-}
+        input::placeholder { color: #aaaaaa; }
 
-.history-grid-container::-webkit-scrollbar { 
-    display: none; 
-}
+        .sidebar button.main-btn {
+            width: 100% !important;
+            height: 50px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-grey);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.history-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
+        .btn-create { margin-bottom: 5px; }
 
-.history-item {
-    background: #ffffff;
-    padding: 20px;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-}
+        .color-palette {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 5px;
+            padding: 10px 0;
+        }
 
-.history-info-title { 
-    display: flex; justify-content: space-between; align-items: flex-start; 
-    font-size: 14px; font-weight: 600; line-height: 1.4; 
-    word-break: keep-all; 
-}
-.history-info-sub { 
-    font-size: 13px; line-height: 1.4; font-weight: 600; color: var(--text-grey); 
-}
-.history-actions { 
-    display: flex; gap: 8px; align-items: center; margin-top: auto; 
-}
+        .color-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.1s ease, border-color 0.1s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
 
-.btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; padding: 0 12px !important; height: 36px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; cursor: pointer; }
-.btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 36px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; cursor: pointer; }
+        .color-circle.selected {
+            border-color: #000000;
+            transform: scale(1.15);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
 
-/* --------------------------------- */
-/* 오른쪽 페이지: 기존 메인 트래커 화면  */
-/* --------------------------------- */
-.main-page {
-    background: var(--bg-main);
-}
+        .history-title { 
+            font-size: 11px; font-weight: 800; color: var(--text-grey); 
+            margin: 30px 0 20px; text-transform: uppercase; letter-spacing: 1.2px;
+        }
 
-/* 🔥 사이드바 내부 스크롤 허용 및 당겨짐 방지 */
-.sidebar {
-    width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-    background: var(--bg-sidebar);
-    border-right: 1px solid #eeeeee;
-    display: flex;
-    flex-direction: column;
-    padding: 40px 20px 90px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-}
+        .history-list { display: flex; flex-direction: column; gap: 20px; }
+        .history-item { padding-bottom: 20px; border-bottom: 1px solid #eeeeee; }
+        
+        .history-info-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; line-height: 1.5; }
+        .history-info-sub { font-size: 14px; margin-bottom: 12px; line-height: 1.5; font-weight: 600; }
+        
+        .history-actions { display: flex; gap: 8px; align-items: center; }
 
-.input-group {
-    display: flex; flex-direction: column; gap: 15px;
-}
+        .btn-load { background: #eeeeee !important; color: #000000 !important; border: none !important; width: 70px !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
+        .btn-del { background: #ffffff !important; color: var(--muted-red) !important; border: 1.5px solid var(--muted-red) !important; flex: 1 !important; height: 40px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; }
 
-input[type="date"], input[type="text"], input[type="number"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    background: #ffffff;
-}
+        .main-content {
+            flex: 1;
+            padding: 60px 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.main-btn {
-    width: 100%;
-    padding: 14px;
-    border: none; border-radius: 8px;
-    font-size: 14px; font-weight: 700;
-    cursor: pointer; margin-top: 5px;
-}
-.btn-create { background: #000000; color: #ffffff; }
-.btn-save { background: var(--muted-green); color: #ffffff; }
+        .tracker-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: max-content; 
+            position: relative;
+        }
 
-.color-palette {
-    display: flex; gap: 10px; margin-top: 15px; justify-content: center;
-}
-.color-circle {
-    width: 30px; height: 30px; border-radius: 50%;
-    cursor: pointer; border: 2px solid transparent;
-}
-.color-circle.selected {
-    border-color: #000000; transform: scale(1.1);
-}
+        .status-header { 
+            margin-bottom: 40px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            width: 100%; 
+            position: relative; 
+        }
+        .progress-text { font-size: 32px; font-weight: 300; }
 
-/* 🔥 메인 컨텐츠(네모칸 구역) 스크롤 허용 및 당겨짐 방지 */
-.main-content {
-    flex: 1;
-    padding: 60px 40px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-}
+        .btn-done {
+            position: absolute;
+            right: 10px; 
+            background: #ffffff;
+            border: 1.5px solid #e0e0e0;
+            color: #999999;
+            width: 70px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: none; 
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-done.is-done {
+            border-color: #569126;
+            color: #569126;
+        }
 
-.tracker-wrapper {
-    max-width: 900px; margin: 0 auto;
-}
+        .tracker-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            gap: 8px;
+            padding: 10px;
+            user-select: none;
+            touch-action: none;
+        }
 
-.status-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
-}
-.progress-text {
-    font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
-}
-.btn-done {
-    background: #000000; color: #ffffff; border: none; padding: 10px 24px;
-    border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; display: none;
-}
-.btn-done.is-done { background: var(--muted-green); }
+        .box {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--box-border);
+            border-radius: 5px;
+            background: #ffffff;
+            cursor: pointer;
+        }
 
-.tracker-grid {
-    display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
-}
-.box {
-    width: 32px; height: 32px; background: #ffffff;
-    border: 1.5px solid var(--box-border); border-radius: 6px; cursor: pointer;
-}
-.box.filled { border-color: transparent; }
+        .box.filled { border-color: transparent; }
 
-.motivation-text {
-    position: absolute;
-    bottom: 40px; right: 40px;
-    color: #000000; font-size: 18px; font-weight: 800;
-    opacity: 0.15; pointer-events: none; z-index: 10;
-}
+        .motivation-text {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            color: #000000;
+            font-size: 24px;
+            font-weight: 800;
+            z-index: 100;
+        }
+        
+        .motivation-text:empty {
+            display: none;
+        }
 
-/* --------------------------------- */
-/* 네비게이션 버튼 (화살표) 스타일       */
-/* --------------------------------- */
-.nav-btn {
-    position: absolute;
-    bottom: 30px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #ffffff;
-    color: #000000;
-    border: 1px solid var(--border-color);
-    font-size: 22px;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    z-index: 1000;
-}
-.nav-right { right: 30px; } 
-.nav-left { left: 30px; }   
-
-::-webkit-scrollbar { width: 0; display: none; }
-</style>
+        ::-webkit-scrollbar { width: 0; }
+    </style>
 </head>
 <body>
 
-    <div class="slider-container" id="slider">
-
-        <!-- [왼쪽 페이지] 저장된 기록 -->
-        <div class="page records-page">
-            <div class="records-header">SAVED RECORDS</div>
-            <div class="history-grid-container">
-                <div id="historyGrid" class="history-grid"></div>
+    <div class="sidebar">
+        <div class="input-group">
+            <input type="date" id="dateInput">
+            <input type="text" id="nameInput" placeholder="항목 이름">
+            <input type="number" id="totalInput" placeholder="총 문제 수">
+            <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
+            <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
+            
+            <div id="colorPalette" class="color-palette" style="display: none;">
+                <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.6);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.6)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.4);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.4)')"></div>
+                <div class="color-circle" style="background: rgba(45, 90, 39, 0.2);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.2)')"></div>
             </div>
-            <button class="nav-btn nav-right" onclick="goToMain()">→</button>
         </div>
-
-        <!-- [오른쪽 페이지] 메인 트래커 화면 -->
-        <div class="page main-page">
-            <button class="nav-btn nav-left" onclick="goToRecords()">←</button>
-
-            <div class="sidebar">
-                <div class="input-group">
-                    <input type="date" id="dateInput">
-                    <input type="text" id="nameInput" placeholder="항목 이름">
-                    <input type="number" id="totalInput" placeholder="총 문제 수">
-                    <button class="main-btn btn-create" onclick="createNew()">CREATE</button>
-                    <button id="saveBtn" class="main-btn btn-save" style="display:none;" onclick="saveData()">SAVE PROGRESS</button>
-                    
-                    <div id="colorPalette" class="color-palette" style="display: none;">
-                        <div class="color-circle selected" style="background: rgba(45, 90, 39, 1);" onclick="selectColor(this, 'rgba(45, 90, 39, 1)')"></div>
-                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.8);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.8)')"></div>
-                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.6);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.6)')"></div>
-                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.4);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.4)')"></div>
-                        <div class="color-circle" style="background: rgba(45, 90, 39, 0.2);" onclick="selectColor(this, 'rgba(45, 90, 39, 0.2)')"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="main-content">
-                <div class="tracker-wrapper">
-                    <div class="status-header">
-                        <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
-                        <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
-                    </div>
-                    <div id="trackerGrid" class="tracker-grid"></div>
-                </div>
-            </div>
-
-            <div class="motivation-text">미적을 존나게 해</div>
-        </div>
-
+        <div class="history-title">SAVED RECORDS</div>
+        <div id="historyList" class="history-list"></div>
     </div>
 
-<script>
-let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
-let isDragging = false;
-let lastProcessedIdx = -1;
-let activeColor = 'rgba(45, 90, 39, 1)';
+    <div class="main-content">
+        <div class="tracker-wrapper">
+            <div class="status-header">
+                <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
+                <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
+            </div>
+            <div id="trackerGrid" class="tracker-grid"></div>
+        </div>
+    </div>
 
-const grid = document.getElementById('trackerGrid');
-const dateInput = document.getElementById('dateInput');
+    <!-- 
+      ▼▼▼ 동기부여 문구 입력란 ▼▼▼ 
+      아래 <div>와 </div> 사이에 원하는 문구를 입력하면 우측 하단에 나타납니다.
+      아무것도 적지 않고 <div class="motivation-text"></div> 형태로 붙여두면 화면에 나타나지 않습니다.
+    -->
+    <div class="motivation-text">미적을 존나게 해</div>
 
-dateInput.value = new Date().toISOString().split('T')[0];
-dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
+    <script>
+        let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
+        let isDragging = false;
+        let lastProcessedIdx = -1;
+        let activeColor = 'rgba(45, 90, 39, 1)'; // 기본 색상 (가장 어두운 진초록)
 
-/* 페이지 슬라이드 기능 */
-function goToRecords() {
-    document.getElementById('slider').style.transform = 'translateX(0)';
-}
-function goToMain() {
-    document.getElementById('slider').style.transform = 'translateX(-100vw)';
-}
-function selectColor(element, color) {
-    document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
-    element.classList.add('selected');
-    activeColor = color;
-}
+        const grid = document.getElementById('trackerGrid');
+        const dateInput = document.getElementById('dateInput');
+        
+        dateInput.value = new Date().toISOString().split('T')[0];
+        
+        dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
 
+        // 팔레트 색상 선택 함수
+        function selectColor(element, color) {
+            document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            activeColor = color;
+        }
+
+        function createNew() {
+            const total = parseInt(document.getElementById('totalInput').value);
+            const name = document.getElementById('nameInput').value;
+            if (!total || total <= 0) return;
+
+            currentData = {
+                id: Date.now(),
+                name: name || '무제',
+                date: dateInput.value,
+                total: total,
+                state: Array(total).fill(null),
+                done: false
+            };
+            
+            initGridDOM();
+            updateGridUI();
+            
+            document.getElementById('saveBtn').style.display = 'block';
+            document.getElementById('colorPalette').style.display = 'flex';
+            document.getElementById('doneBtn').style.display = 'flex';
+            updateDoneBtnUI();
+        }
+
+        function initGridDOM() {
+            grid.innerHTML = '';
+            for (let i = 0; i < currentData.total; i++) {
+                const box = document.createElement('div');
+                box.className = 'box';
+                box.dataset.index = i;
+                grid.appendChild(box);
+            }
+        }
+
+        function updateGridUI() {
+            const boxes = grid.querySelectorAll('.box');
+            
+            currentData.state.forEach((stateObj, idx) => {
+                const box = boxes[idx];
+                if (!box) return;
+
+                if (stateObj !== null) {
+                    box.classList.add('filled');
+                    box.style.backgroundColor = stateObj.color;
+                } else {
+                    box.classList.remove('filled');
+                    box.style.backgroundColor = '#ffffff';
+                }
+            });
+            updateStatus();
+        }
+
+        function updateStatus() {
+            const solved = currentData.state.filter(s => s !== null).length;
+            const percent = currentData.total > 0 ? Math.round((solved / currentData.total) * 100) : 0;
+            document.getElementById('statusInfo').innerText = `${solved} / ${currentData.total} (${percent}%)`;
+        }
+
+        function getTargetIdx(e) {
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            if (!target || !target.classList.contains('box')) return null;
+            return parseInt(target.dataset.index);
+        }
+
+        grid.addEventListener('pointerdown', (e) => {
+            const idx = getTargetIdx(e);
+            if (idx !== null) {
+                isDragging = true;
+                lastProcessedIdx = idx;
+                processFill(idx, false);
+                grid.setPointerCapture(e.pointerId);
+            }
+        });
+
+        grid.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const idx = getTargetIdx(e);
+            if (idx !== null && idx !== lastProcessedIdx) {
+                lastProcessedIdx = idx;
+                processFill(idx, true);
+            }
+        });
+
+        grid.addEventListener('pointerup', () => { 
+            isDragging = false; 
+            lastProcessedIdx = -1;
+        });
+
+        function processFill(targetIdx, dragging) {
+            const currentSelectedDate = dateInput.value;
+            const newState = [...currentData.state];
+            
+            let lastFilledIdx = -1;
+            for(let i = 0; i < newState.length; i++) {
+                if(newState[i] !== null) lastFilledIdx = i;
+            }
+
+            if (targetIdx > lastFilledIdx) {
+                for (let i = 0; i <= targetIdx; i++) {
+                    if (newState[i] === null) {
+                        newState[i] = { date: currentSelectedDate, color: activeColor };
+                    }
+                }
+            } else if (targetIdx === lastFilledIdx && !dragging) {
+                newState[targetIdx] = null;
+            } else {
+                for (let i = newState.length - 1; i > targetIdx; i--) {
+                    newState[i] = null;
+                }
+            }
+            currentData.state = newState;
+            updateGridUI();
+        }
+
+        function saveData() {
+            currentData.name = document.getElementById('nameInput').value || '무제';
+            
+            const newTotalStr = document.getElementById('totalInput').value;
+            const newTotal = parseInt(newTotalStr);
+            
+            if (!isNaN(newTotal) && newTotal > 0 && newTotal !== currentData.total) {
+                const oldState = currentData.state;
+                currentData.total = newTotal;
+                
+                const newState = Array(newTotal).fill(null);
+                for (let i = 0; i < Math.min(oldState.length, newTotal); i++) {
+                    newState[i] = oldState[i];
+                }
+                currentData.state = newState;
+                
+                initGridDOM();
+                updateGridUI();
+            }
+
+            let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
+            const idx = logs.findIndex(l => l.id === currentData.id);
+            if (idx > -1) logs[idx] = JSON.parse(JSON.stringify(currentData));
+            else logs.push(JSON.parse(JSON.stringify(currentData)));
+            localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
+            list.innerHTML = '';
+            logs.slice().reverse().forEach(log => {
+                const solved = log.state.filter(s => s !== null).length;
+                const isDoneHtml = log.done ? `<span style="color:#569126; font-weight: 800;">✓</span>` : '';
+                
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <div class="history-info-title">
+                        <strong>${log.name}</strong>
+                        ${isDoneHtml}
+                    </div>
+                    <div class="history-info-sub">${log.date} (${solved}/${log.total})</div>
+                    <div class="history-actions">
+                        <button class="btn-load" onclick="loadData(${log.id})">LOAD</button>
+                        <button class="btn-del" onclick="deleteData(${log.id})">DELETE</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function loadData(id) {
+            const logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
+            const target = logs.find(l => l.id === id);
+            if (target) {
+                currentData = JSON.parse(JSON.stringify(target));
+                if (currentData.done === undefined) currentData.done = false; 
+                
+                currentData.state = currentData.state.map(s => {
+                    if (s === null) return null;
+                    if (typeof s === 'string') return { date: s, color: 'rgba(45, 90, 39, 1)' };
+                    return s;
+                });
+
+                document.getElementById('nameInput').value = currentData.name;
+                document.getElementById('totalInput').value = currentData.total;
+                dateInput.value = currentData.date;
+                initGridDOM();
+                updateGridUI();
+                
+                document.getElementById('saveBtn').style.display = 'block';
+                document.getElementById('colorPalette').style.display = 'flex';
+                document.getElementById('doneBtn').style.display = 'flex';
+                updateDoneBtnUI();
+            }
+        }
+
+        function deleteData(id) {
+            if(!confirm("삭제하시겠습니까?")) return;
+            let logs = JSON.parse(localStorage.getItem('math_logs_muted_v1') || '[]');
+            logs = logs.filter(l => l.id !== id);
+            localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
+            renderHistory();
+        }
+
+        function toggleDone() {
+            if (!currentData.id) return;
+            currentData.done = !currentData.done;
+            updateDoneBtnUI();
+            saveData(); 
+        }
+
+        function updateDoneBtnUI() {
+            const btn = document.getElementById('doneBtn');
+            if (currentData.done) {
+                btn.classList.add('is-done');
+            } else {
+                btn.classList.remove('is-done');
+            }
+        }
 
         renderHistory();
     </script>
 </body>
 </html>
+
