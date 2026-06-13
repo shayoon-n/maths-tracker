@@ -402,7 +402,7 @@
 
     </div>
 
-    <div class="motivation-text">내 인생의 마지막 기회...</div>
+    <div class="motivation-text">미적을 존나게 해</div>
 
     <script>
         let currentData = { id: null, name: '', date: '', total: 0, state: [], done: false };
@@ -538,6 +538,7 @@
             else logs.push(JSON.parse(JSON.stringify(currentData)));
             localStorage.setItem('math_logs_muted_v1', JSON.stringify(logs));
             renderHistory();
+            alert('저장되었습니다.');
         }
 
         function renderHistory() {
