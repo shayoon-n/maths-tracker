@@ -178,7 +178,6 @@
             overflow: hidden;
         }
 
-        /* ── 사이드바 ── */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -191,20 +190,6 @@
             height: 100vh;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
-            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                        min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                        opacity 0.35s ease,
-                        padding 0.35s ease;
-        }
-
-        /* 집중모드: 사이드바 숨기기 */
-        body.focus-mode .sidebar {
-            width: 0;
-            min-width: 0;
-            padding: 0;
-            opacity: 0;
-            overflow: hidden;
-            border-right: none;
         }
 
         .input-group {
@@ -326,7 +311,6 @@
             white-space: nowrap;
         }
 
-        /* ── 메인 콘텐츠 ── */
         .main-content {
             flex: 1;
             padding: 60px 40px;
@@ -337,15 +321,13 @@
             height: 100vh;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
-            transition: padding 0.35s ease;
         }
 
         .tracker-wrapper {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            position: relative;
             width: max-content;
+            position: relative;
         }
 
         .status-header {
@@ -360,9 +342,8 @@
         .progress-text { font-size: 32px; font-weight: 300; }
 
         .btn-done {
-            position: fixed;
-            top: 30px;
-            right: 30px;
+            position: absolute;
+            right: 10px;
             background: #ffffff;
             border: 1.5px solid #e0e0e0;
             color: #999999;
@@ -375,7 +356,6 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 150;
         }
 
         .btn-done.is-done {
@@ -383,10 +363,9 @@
             color: #569126;
         }
 
-        /* ── 트래커 그리드 ── */
         .tracker-grid {
             display: grid;
-            grid-template-columns: repeat(10, minmax(0, 56px));
+            grid-template-columns: repeat(10, 1fr);
             gap: 8px;
             padding: 10px;
             user-select: none;
@@ -400,29 +379,6 @@
             border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
-        }
-
-        /* 화면 좁을 때: 사이드바 숨기고 네모칸 가로만 축소, 세로 42px 고정 */
-        @media (max-width: 900px) {
-            .sidebar {
-                width: 0 !important;
-                min-width: 0 !important;
-                padding: 0 !important;
-                opacity: 0 !important;
-                overflow: hidden !important;
-                border-right: none !important;
-            }
-            .tracker-grid {
-                grid-template-columns: repeat(10, minmax(0, 1fr));
-                width: 100%;
-                gap: 6px;
-            }
-            .box {
-                width: 100%;
-                min-width: 0;
-                height: 42px !important;
-                aspect-ratio: unset !important;
-            }
         }
 
         .box.filled { border-color: transparent; }
@@ -441,7 +397,7 @@
 
         #ddayDisplay {
             position: absolute;
-            top: 60px;
+            top: 72px;
             right: 160px;
             font-size: 24px;
             font-weight: 800;
@@ -453,50 +409,6 @@
         .hyun-img {
             width: 270px;
             display: block;
-        }
-
-        /* ── 집중모드 스위치 ── */
-        .focus-switch-wrap {
-            display: flex;
-            justify-content: flex-end;
-            width: 100%;
-            margin-bottom: 10px;
-            pointer-events: auto;
-            padding-right: 10px;
-        }
-
-        .focus-switch {
-            width: 51px;
-            height: 31px;
-            background: #cccccc;
-            border-radius: 16px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.25s ease;
-            border: none;
-            outline: none;
-            display: block;
-        }
-
-        .focus-switch::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 27px;
-            height: 27px;
-            background: #ffffff;
-            border-radius: 50%;
-            transition: transform 0.25s ease;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-        }
-
-        .focus-switch.on {
-            background: #34c759;
-        }
-
-        .focus-switch.on::after {
-            transform: translateX(20px);
         }
 
         ::-webkit-scrollbar { width: 0; }
@@ -518,7 +430,7 @@
 
         <!-- ── 오른쪽: 트래커 페이지 ── -->
         <div class="page-tracker">
-            <div class="sidebar" id="sidebar">
+            <div class="sidebar">
                 <div class="input-group">
                     <input type="date" id="dateInput">
                     <input type="text" id="nameInput" placeholder="항목 이름">
@@ -545,8 +457,8 @@
                 </div>
             </div>
 
-            <div class="main-content" id="mainContent">
-                <div class="tracker-wrapper" id="trackerWrapper">
+            <div class="main-content">
+                <div class="tracker-wrapper">
                     <div class="status-header">
                         <div id="statusInfo" class="progress-text">0 / 0 (0%)</div>
                         <button id="doneBtn" class="btn-done" onclick="toggleDone()">DONE</button>
@@ -558,12 +470,9 @@
 
     </div>
 
-    <!-- hyun 이미지 + 디데이 텍스트 -->
+    <!-- hyun 이미지 + 디데이 말풍선 (트래커 페이지 고정) -->
     <div class="hyun-container" id="hyunContainer">
         <div id="ddayDisplay"></div>
-        <div class="focus-switch-wrap">
-            <button class="focus-switch" id="focusSwitch" onclick="toggleFocusMode()"></button>
-        </div>
         <img class="hyun-img" src="hyun.PNG" alt="">
     </div>
 
@@ -572,8 +481,6 @@
         let isDragging = false;
         let lastProcessedIdx = -1;
         let activeColor = 'rgba(45, 90, 39, 1)';
-        let focusMode = false;
-        let swipeDisabled = false;
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
@@ -779,21 +686,6 @@
             else btn.classList.remove('is-done');
         }
 
-        // ── 집중 모드 ──
-        function toggleFocusMode() {
-            focusMode = !focusMode;
-            const sw = document.getElementById('focusSwitch');
-            if (focusMode) {
-                document.body.classList.add('focus-mode');
-                sw.classList.add('on');
-                swipeDisabled = true;
-            } else {
-                document.body.classList.remove('focus-mode');
-                sw.classList.remove('on');
-                swipeDisabled = false;
-            }
-        }
-
         // ── 디데이 ──
         function calcDday(targetDateStr) {
             const now = new Date();
@@ -841,7 +733,6 @@
 
         document.addEventListener('pointerdown', (e) => {
             if (e.target.closest('#trackerGrid')) return;
-            if (e.target.closest('.focus-switch-wrap')) return;
             swipeStartX = e.clientX;
             swipeStartY = e.clientY;
             swipeActive = true;
@@ -850,9 +741,7 @@
         document.addEventListener('pointerup', (e) => {
             if (!swipeActive) return;
             swipeActive = false;
-            if (swipeDisabled) return;
             if (e.target.closest('#trackerGrid')) return;
-            if (e.target.closest('.focus-switch-wrap')) return;
 
             const dx = e.clientX - swipeStartX;
             const dy = e.clientY - swipeStartY;
