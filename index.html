@@ -190,6 +190,12 @@
             height: 100vh;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
+            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 집중 모드 시 사이드바 숨김 처리 */
+        .page-tracker.focus-mode .sidebar {
+            margin-left: calc(-1 * var(--sidebar-width));
         }
 
         .input-group {
@@ -383,7 +389,7 @@
 
         .box.filled { border-color: transparent; }
 
-        /* ── hyun 이미지 + 디데이 텍스트 ── */
+        /* ── hyun 이미지 + 디데이 텍스트 + 집중모드 버튼 ── */
         .hyun-container {
             position: fixed;
             bottom: 0;
@@ -409,6 +415,55 @@
         .hyun-img {
             width: 270px;
             display: block;
+        }
+
+        /* 집중 모드 (iOS 스위치 형태) */
+        .focus-switch {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+            pointer-events: auto;
+            z-index: 101;
+        }
+
+        .focus-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .focus-switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e5e5ea;
+            transition: .3s;
+            border-radius: 31px;
+        }
+
+        .focus-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .focus-switch input:checked + .slider {
+            background-color: #34C759;
+        }
+
+        .focus-switch input:checked + .slider:before {
+            transform: translateX(20px);
         }
 
         ::-webkit-scrollbar { width: 0; }
@@ -470,8 +525,12 @@
 
     </div>
 
-    <!-- hyun 이미지 + 디데이 말풍선 (트래커 페이지 고정) -->
+    <!-- hyun 이미지 + 집중모드 버튼 + 디데이 말풍선 (트래커 페이지 고정) -->
     <div class="hyun-container" id="hyunContainer">
+        <label class="focus-switch">
+            <input type="checkbox" id="focusToggle" onchange="toggleFocusMode()">
+            <span class="slider"></span>
+        </label>
         <div id="ddayDisplay"></div>
         <img class="hyun-img" src="hyun.PNG" alt="">
     </div>
@@ -481,6 +540,7 @@
         let isDragging = false;
         let lastProcessedIdx = -1;
         let activeColor = 'rgba(45, 90, 39, 1)';
+        let isFocusMode = false; // 집중 모드 상태 변수 추가
 
         const grid = document.getElementById('trackerGrid');
         const dateInput = document.getElementById('dateInput');
@@ -488,6 +548,21 @@
 
         dateInput.value = new Date().toISOString().split('T')[0];
         dateInput.addEventListener('change', () => { if (currentData.id) updateGridUI(); });
+
+        // ── 집중 모드 ──
+        function toggleFocusMode() {
+            isFocusMode = document.getElementById('focusToggle').checked;
+            const trackerPage = document.querySelector('.page-tracker');
+
+            if (isFocusMode) {
+                // 집중 모드 켜기: 강제로 트래커 화면으로 이동하고 제어판 숨김
+                pagesWrapper.classList.remove('show-records');
+                trackerPage.classList.add('focus-mode');
+            } else {
+                // 집중 모드 끄기: 제어판 다시 표시
+                trackerPage.classList.remove('focus-mode');
+            }
+        }
 
         // ── 팔레트 색상 선택 ──
         function selectColor(element, color) {
@@ -732,6 +807,8 @@
         let swipeActive = false;
 
         document.addEventListener('pointerdown', (e) => {
+            // 집중 모드일 때는 스와이프 차단
+            if (isFocusMode) return;
             if (e.target.closest('#trackerGrid')) return;
             swipeStartX = e.clientX;
             swipeStartY = e.clientY;
@@ -739,6 +816,11 @@
         }, { passive: true });
 
         document.addEventListener('pointerup', (e) => {
+            // 집중 모드일 때는 스와이프 차단
+            if (isFocusMode) {
+                swipeActive = false;
+                return;
+            }
             if (!swipeActive) return;
             swipeActive = false;
             if (e.target.closest('#trackerGrid')) return;
