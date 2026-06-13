@@ -345,6 +345,7 @@
             flex-direction: column;
             align-items: center;
             position: relative;
+            width: max-content;
         }
 
         .status-header {
@@ -359,8 +360,9 @@
         .progress-text { font-size: 32px; font-weight: 300; }
 
         .btn-done {
-            position: absolute;
-            right: 10px;
+            position: fixed;
+            top: 30px;
+            right: 30px;
             background: #ffffff;
             border: 1.5px solid #e0e0e0;
             color: #999999;
@@ -373,6 +375,7 @@
             display: none;
             align-items: center;
             justify-content: center;
+            z-index: 150;
         }
 
         .btn-done.is-done {
@@ -380,24 +383,36 @@
             color: #569126;
         }
 
-        /* ── 트래커 그리드: 반응형 ── */
+        /* ── 트래커 그리드 ── */
         .tracker-grid {
             display: grid;
-            grid-template-columns: repeat(10, 1fr);
+            grid-template-columns: repeat(10, minmax(0, 56px));
             gap: 8px;
             padding: 10px;
             user-select: none;
             touch-action: none;
-            width: 100%;
         }
 
         .box {
-            aspect-ratio: 4 / 3;
+            width: 56px;
+            height: 42px;
             border: 1px solid var(--box-border);
             border-radius: 5px;
             background: #ffffff;
             cursor: pointer;
-            width: 100%;
+        }
+
+        /* 화면 좁을 때 칸 자동 축소 */
+        @media (max-width: 900px) {
+            .tracker-grid {
+                grid-template-columns: repeat(10, 1fr);
+                width: 100%;
+            }
+            .box {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 4 / 3;
+            }
         }
 
         .box.filled { border-color: transparent; }
@@ -432,10 +447,10 @@
 
         /* ── 집중모드 스위치 ── */
         .focus-switch-wrap {
-            position: fixed;
-            right: 114px; /* hyun-container right(40) + img(270)/2 - switch(44)/2 ≈ 중앙 */
-            bottom: 282px;
-            z-index: 200;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 10px;
             pointer-events: auto;
         }
 
@@ -535,12 +550,10 @@
     <!-- hyun 이미지 + 디데이 텍스트 -->
     <div class="hyun-container" id="hyunContainer">
         <div id="ddayDisplay"></div>
+        <div class="focus-switch-wrap">
+            <button class="focus-switch" id="focusSwitch" onclick="toggleFocusMode()"></button>
+        </div>
         <img class="hyun-img" src="hyun.PNG" alt="">
-    </div>
-
-    <!-- 집중모드 스위치 -->
-    <div class="focus-switch-wrap">
-        <button class="focus-switch" id="focusSwitch" onclick="toggleFocusMode()"></button>
     </div>
 
     <script>
