@@ -402,16 +402,23 @@
             cursor: pointer;
         }
 
-        /* 화면 좁을 때 칸 자동 축소 */
+        /* 화면 좁을 때: 사이드바 숨기고 네모칸 가로만 축소(정사각형) */
         @media (max-width: 900px) {
+            .sidebar {
+                width: 0 !important;
+                min-width: 0 !important;
+                padding: 0 !important;
+                opacity: 0 !important;
+                overflow: hidden !important;
+                border-right: none !important;
+            }
             .tracker-grid {
                 grid-template-columns: repeat(10, 1fr);
                 width: 100%;
             }
             .box {
                 width: 100%;
-                height: auto;
-                aspect-ratio: 4 / 3;
+                height: 42px;
             }
         }
 
@@ -431,7 +438,7 @@
 
         #ddayDisplay {
             position: absolute;
-            top: 40px;
+            top: 60px;
             right: 160px;
             font-size: 24px;
             font-weight: 800;
@@ -452,6 +459,7 @@
             width: 100%;
             margin-bottom: 10px;
             pointer-events: auto;
+            padding-left: 20px;
         }
 
         .focus-switch {
